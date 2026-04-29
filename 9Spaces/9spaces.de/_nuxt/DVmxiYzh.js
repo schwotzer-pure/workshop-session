@@ -1,0 +1,1 @@
+import{q as l,E as r,aJ as c}from"./B34gsgcg.js";function n(){const e=l(),t=r(),a=c("isPlatformViaBack",()=>!1);function s(){a.value?(a.value=!1,e.back()):e.push({path:t("/platform")})}function u(o){!o.includes("/tools/")&&!o.includes("/journeys/")&&(a.value=!1)}return{isPlatformViaBack:a,goToPlatform:s,checkPathForPlatformReturn:u}}export{n as u};

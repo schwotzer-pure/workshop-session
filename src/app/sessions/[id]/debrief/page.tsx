@@ -38,7 +38,7 @@ export default async function DebriefPage({
 
   if (sessions.length === 0) {
     return (
-      <div className="aurora-bg flex min-h-screen">
+      <div className="aurora-bg flex min-h-screen" suppressHydrationWarning>
         <Sidebar
           user={{
             name: session.user.name ?? "Trainer",

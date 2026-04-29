@@ -17,7 +17,7 @@ export default async function DashboardLayout({
     : null;
 
   return (
-    <div className="aurora-bg flex min-h-screen">
+    <div className="aurora-bg flex min-h-screen" suppressHydrationWarning>
       <Sidebar
         user={{
           name: session.user.name ?? "Trainer",

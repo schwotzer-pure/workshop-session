@@ -1,0 +1,1 @@
+import{O as r,aF as m,aG as p,aH as L,aI as f}from"./B34gsgcg.js";function S(e,c){const{locale:o}=r(),n=m(),{setAvailableLocales:t,clearAvailableLocales:i}=p(),u=e?.localizations??[],s=new Set([o.value]),l={[o.value]:{slug:c}};for(const a of u)l[a.locale]={slug:a.slug},L(a.locale)&&s.add(a.locale);n(l),t([...s]),f(i)}export{S as u};

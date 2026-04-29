@@ -1,0 +1,1 @@
+import{B as r}from"./BCAGEWWF.js";import{d as a,f as o,o as s,g as t,J as p}from"./B34gsgcg.js";const d=a({__name:"CardSparkle",setup(n){return(e,l)=>(s(),o(r,{class:"p-5 border-2 border-grey-600"},{default:t(()=>[p(e.$slots,"default")]),_:3}))}});export{d as _};
