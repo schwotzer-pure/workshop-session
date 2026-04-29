@@ -140,6 +140,7 @@ export default async function SessionDetailPage({
             workshop={workshop}
             categories={categories}
             users={users}
+            methods={methods}
             currentUserId={session.user.id}
             isAdmin={session.user.role === "ADMIN"}
           />

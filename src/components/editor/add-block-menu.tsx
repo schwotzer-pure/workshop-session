@@ -7,6 +7,7 @@ import {
   Layers,
   Columns3,
   StickyNote,
+  LibraryBig,
 } from "lucide-react";
 import {
   Popover,
@@ -16,9 +17,12 @@ import {
 import { cn } from "@/lib/utils";
 
 export type BlockKind = "BLOCK" | "GROUP" | "BREAKOUT" | "NOTE";
+/** What the user can pick from the Add-Block menu — includes "METHOD" which
+ * triggers a downstream picker for an existing library method. */
+export type AddBlockOption = BlockKind | "METHOD";
 
 const OPTIONS: Array<{
-  type: BlockKind;
+  type: AddBlockOption;
   title: string;
   desc: string;
   Icon: React.ComponentType<{ className?: string }>;
@@ -28,6 +32,12 @@ const OPTIONS: Array<{
     title: "Block",
     desc: "Eine Aktivität in deiner Session",
     Icon: Square,
+  },
+  {
+    type: "METHOD",
+    title: "Methoden-Block",
+    desc: "Aus der Bibliothek (Brainstorming, Retro, …)",
+    Icon: LibraryBig,
   },
   {
     type: "GROUP",
@@ -53,12 +63,18 @@ export function AddBlockMenu({
   onSelect,
   variant = "primary",
   label,
+  allowedTypes,
 }: {
-  onSelect: (type: BlockKind) => void;
+  onSelect: (type: AddBlockOption) => void;
   variant?: "primary" | "ghost" | "compact";
   label?: string;
+  /** Restrict which options are shown. Defaults to all. */
+  allowedTypes?: AddBlockOption[];
 }) {
   const [open, setOpen] = useState(false);
+  const opts = allowedTypes
+    ? OPTIONS.filter((o) => allowedTypes.includes(o.type))
+    : OPTIONS;
 
   const triggerClass = cn(
     variant === "compact" &&
@@ -90,7 +106,7 @@ export function AddBlockMenu({
         align="start"
       >
         <div className="space-y-0.5">
-          {OPTIONS.map((opt) => {
+          {opts.map((opt) => {
             const Icon = opt.Icon;
             return (
               <button

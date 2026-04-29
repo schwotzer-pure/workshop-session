@@ -48,10 +48,14 @@ export function BlockGroup({
   computedEndTime: string;
   isActiveDrag: boolean;
   ctx: EditorContext;
-  onAddChild: (parentId: string, type: "BLOCK" | "NOTE", column?: number) => void;
+  onAddChild: (
+    parentId: string,
+    type: "BLOCK" | "NOTE" | "METHOD",
+    column?: number
+  ) => void;
   onInsertChildAt: (
     parentId: string,
-    type: "BLOCK" | "NOTE",
+    type: "BLOCK" | "NOTE" | "METHOD",
     column: number,
     position: number
   ) => void;
@@ -127,7 +131,7 @@ export function BlockGroup({
                 <div key={c.id} className="space-y-0.5">
                   <InsertGap
                     onSelect={(type) => {
-                      if (type === "BLOCK" || type === "NOTE") {
+                      if (type === "BLOCK" || type === "NOTE" || type === "METHOD") {
                         onInsertChildAt(block.id, type, 0, idx);
                       } else {
                         toast.info("Gruppen können nur Blöcke und Notizen enthalten.");
@@ -147,7 +151,7 @@ export function BlockGroup({
             })}
           <InsertGap
             onSelect={(type) => {
-              if (type === "BLOCK" || type === "NOTE") {
+              if (type === "BLOCK" || type === "NOTE" || type === "METHOD") {
                 onAddChild(block.id, type);
               } else {
                 toast.info("Gruppen können nur Blöcke und Notizen enthalten.");
@@ -160,13 +164,14 @@ export function BlockGroup({
           <AddBlockMenu
             variant="ghost"
             label="Block in Gruppe hinzufügen"
-            onSelect={(type: BlockKind) => {
-              if (type === "BLOCK" || type === "NOTE") {
+            onSelect={(type) => {
+              if (type === "BLOCK" || type === "NOTE" || type === "METHOD") {
                 onAddChild(block.id, type);
               } else {
                 toast.info("Gruppen können nur Blöcke und Notizen enthalten.");
               }
             }}
+            allowedTypes={["BLOCK", "METHOD", "NOTE"]}
           />
         </div>
       </div>

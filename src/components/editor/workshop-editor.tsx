@@ -27,18 +27,20 @@ import {
   moveBlockAction,
   reorderBlocksAction,
 } from "@/actions/block";
+import { insertMethodAsBlockAction } from "@/actions/method";
 import { deleteWorkshopAction } from "@/actions/workshop";
 import { isRedirectError } from "@/lib/is-redirect";
 import { recalcBlocks, sumChildDurations, totalDuration } from "@/lib/recalc";
-import type { WorkshopWithBlocks, Category, AppUserListItem } from "@/lib/queries";
+import type { WorkshopWithBlocks, Category, AppUserListItem, MethodListItem } from "@/lib/queries";
 import { WorkshopHeader } from "./workshop-header";
 import { BlockCard, BlockCardGhost } from "./block-card";
 import { BlockGroup, BlockGroupGhost } from "./block-group";
 import { BlockBreakout, BlockBreakoutGhost } from "./block-breakout";
-import { AddBlockMenu, type BlockKind } from "./add-block-menu";
+import { AddBlockMenu, type AddBlockOption, type BlockKind } from "./add-block-menu";
 import { InsertGap } from "./insert-gap";
 import { BlockDetailPanel } from "./block-detail-panel";
 import { DayTabs } from "./day-tabs";
+import { MethodPickerDialog } from "./method-picker-dialog";
 import type { BlockData, EditorContext } from "./types";
 
 type ServerBlock = WorkshopWithBlocks["days"][number]["blocks"][number];
@@ -97,12 +99,14 @@ export function WorkshopEditor({
   workshop,
   categories: initialCategories,
   users,
+  methods,
   currentUserId,
   isAdmin,
 }: {
   workshop: WorkshopWithBlocks;
   categories: Category[];
   users: AppUserListItem[];
+  methods: MethodListItem[];
   currentUserId: string;
   isAdmin: boolean;
 }) {
@@ -121,6 +125,11 @@ export function WorkshopEditor({
   const [, startTransition] = useTransition();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+  const [methodPicker, setMethodPicker] = useState<{
+    parentBlockId: string | null;
+    column: number;
+    position?: number;
+  } | null>(null);
   const dragStartBucket = useRef<string | null>(null);
 
   const initialBlocks = useMemo(() => {
@@ -410,8 +419,17 @@ export function WorkshopEditor({
     onOpenBlockDetails: (blockId) => setSelectedBlockId(blockId),
   };
 
-  const handleAddTopBlock = (type: BlockKind, atPosition?: number) => {
+  const handleAddTopBlock = (option: AddBlockOption, atPosition?: number) => {
     if (!day) return;
+    if (option === "METHOD") {
+      setMethodPicker({
+        parentBlockId: null,
+        column: 0,
+        position: atPosition,
+      });
+      return;
+    }
+    const type = option;
     startTransition(async () => {
       try {
         const created = await addBlockAction({
@@ -446,10 +464,15 @@ export function WorkshopEditor({
 
   const handleAddChildBlock = (
     parentId: string,
-    type: "BLOCK" | "NOTE",
+    option: "BLOCK" | "NOTE" | "METHOD",
     column = 0
   ) => {
     if (!day) return;
+    if (option === "METHOD") {
+      setMethodPicker({ parentBlockId: parentId, column });
+      return;
+    }
+    const type = option;
     startTransition(async () => {
       try {
         const created = await addBlockAction({
@@ -481,10 +504,15 @@ export function WorkshopEditor({
 
   const handleInsertChildAt = (
     parentId: string,
-    type: "BLOCK" | "NOTE",
+    option: "BLOCK" | "NOTE" | "METHOD",
     column: number,
     position: number
   ) => {
+    if (option === "METHOD") {
+      setMethodPicker({ parentBlockId: parentId, column, position });
+      return;
+    }
+    const type = option;
     if (!day) return;
     startTransition(async () => {
       try {
@@ -708,6 +736,39 @@ export function WorkshopEditor({
           Session löschen
         </Button>
       </div>
+
+      <MethodPickerDialog
+        open={methodPicker !== null}
+        onOpenChange={(o) => {
+          if (!o) setMethodPicker(null);
+        }}
+        methods={methods}
+        onPick={async (methodId) => {
+          if (!day || !methodPicker) return;
+          const created = await insertMethodAsBlockAction({
+            methodId,
+            dayId: day.id,
+            parentBlockId: methodPicker.parentBlockId,
+            column: methodPicker.column,
+            position: methodPicker.position,
+          });
+          setBlocks((prev) => {
+            const m = new Map(prev);
+            m.set(created.id, toBlockData(created as ServerBlock));
+            return m;
+          });
+          setBuckets((prev) => {
+            const m = new Map(prev);
+            const k = bucketKey(methodPicker.parentBlockId, methodPicker.column);
+            const list = [...(m.get(k) ?? [])];
+            const pos = methodPicker.position ?? list.length;
+            list.splice(pos, 0, created.id);
+            m.set(k, list);
+            return m;
+          });
+          setMethodPicker(null);
+        }}
+      />
 
       {(() => {
         const sel = selectedBlockId ? blocks.get(selectedBlockId) : null;

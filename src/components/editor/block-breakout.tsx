@@ -51,10 +51,14 @@ export function BlockBreakout({
   computedEndTime: string;
   isActiveDrag: boolean;
   ctx: EditorContext;
-  onAddChild: (parentId: string, type: "BLOCK" | "NOTE", column: number) => void;
+  onAddChild: (
+    parentId: string,
+    type: "BLOCK" | "NOTE" | "METHOD",
+    column: number
+  ) => void;
   onInsertChildAt: (
     parentId: string,
-    type: "BLOCK" | "NOTE",
+    type: "BLOCK" | "NOTE" | "METHOD",
     column: number,
     position: number
   ) => void;
@@ -228,10 +232,14 @@ function BreakoutColumn({
   colIds: string[];
   colTotal: number;
   ctx: EditorContext;
-  onAddChild: (parentId: string, type: "BLOCK" | "NOTE", column: number) => void;
+  onAddChild: (
+    parentId: string,
+    type: "BLOCK" | "NOTE" | "METHOD",
+    column: number
+  ) => void;
   onInsertChildAt: (
     parentId: string,
-    type: "BLOCK" | "NOTE",
+    type: "BLOCK" | "NOTE" | "METHOD",
     column: number,
     position: number
   ) => void;
@@ -282,7 +290,7 @@ function BreakoutColumn({
               <div key={c.id} className="space-y-0.5">
                 <InsertGap
                   onSelect={(type) => {
-                    if (type === "BLOCK" || type === "NOTE") {
+                    if (type === "BLOCK" || type === "NOTE" || type === "METHOD") {
                       onInsertChildAt(parentId, type, column, idx);
                     }
                   }}
@@ -300,7 +308,7 @@ function BreakoutColumn({
           })}
           <InsertGap
             onSelect={(type) => {
-              if (type === "BLOCK" || type === "NOTE") {
+              if (type === "BLOCK" || type === "NOTE" || type === "METHOD") {
                 onAddChild(parentId, type, column);
               }
             }}

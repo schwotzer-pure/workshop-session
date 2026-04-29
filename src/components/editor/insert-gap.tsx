@@ -8,28 +8,50 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type { BlockKind } from "./add-block-menu";
-
-const OPTIONS: Array<{
-  type: BlockKind;
-  title: string;
-  desc: string;
-  iconName: "Square" | "Layers" | "Columns3" | "StickyNote";
-}> = [
-  { type: "BLOCK", title: "Block", desc: "Aktivität", iconName: "Square" },
-  { type: "GROUP", title: "Gruppe", desc: "Phase mit Sub-Blöcken", iconName: "Layers" },
-  { type: "BREAKOUT", title: "Breakout", desc: "Parallele Tracks", iconName: "Columns3" },
-  { type: "NOTE", title: "Notiz", desc: "Trainer-Hinweis", iconName: "StickyNote" },
-];
+import type { AddBlockOption } from "./add-block-menu";
 
 import {
   Square,
   Layers,
   Columns3,
   StickyNote,
+  LibraryBig,
 } from "lucide-react";
 
-const ICON_MAP = { Square, Layers, Columns3, StickyNote };
+const ICON_MAP = { Square, Layers, Columns3, StickyNote, LibraryBig };
+
+const OPTIONS: Array<{
+  type: AddBlockOption;
+  title: string;
+  desc: string;
+  iconName: keyof typeof ICON_MAP;
+}> = [
+  { type: "BLOCK", title: "Block", desc: "Aktivität", iconName: "Square" },
+  {
+    type: "METHOD",
+    title: "Methoden-Block",
+    desc: "Aus der Bibliothek",
+    iconName: "LibraryBig",
+  },
+  {
+    type: "GROUP",
+    title: "Gruppe",
+    desc: "Phase mit Sub-Blöcken",
+    iconName: "Layers",
+  },
+  {
+    type: "BREAKOUT",
+    title: "Breakout",
+    desc: "Parallele Tracks",
+    iconName: "Columns3",
+  },
+  {
+    type: "NOTE",
+    title: "Notiz",
+    desc: "Trainer-Hinweis",
+    iconName: "StickyNote",
+  },
+];
 
 /**
  * Insert-Gap: a thin hover-zone that reveals a Plus button to insert a
@@ -40,14 +62,16 @@ export function InsertGap({
   onSelect,
   allowContainers = true,
 }: {
-  onSelect: (type: BlockKind) => void;
+  onSelect: (type: AddBlockOption) => void;
   /** Allow GROUP/BREAKOUT? Inside a group/track they make no sense. */
   allowContainers?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const opts = allowContainers
     ? OPTIONS
-    : OPTIONS.filter((o) => o.type === "BLOCK" || o.type === "NOTE");
+    : OPTIONS.filter(
+        (o) => o.type === "BLOCK" || o.type === "NOTE" || o.type === "METHOD"
+      );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
