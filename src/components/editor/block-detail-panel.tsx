@@ -147,7 +147,7 @@ export function BlockDetailPanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex h-[90vh] w-[95vw] max-w-5xl flex-col gap-0 overflow-hidden p-0"
+        className="!flex !h-[90vh] !w-[95vw] !max-w-[1400px] !flex-col !gap-0 !overflow-hidden !p-0 sm:!max-w-[1400px]"
       >
         {/* Header */}
         <header className="flex items-start justify-between gap-4 border-b border-border/60 px-6 py-4">
@@ -228,7 +228,7 @@ export function BlockDetailPanel({
             className={cn(
               "shrink-0 border-border/60 bg-background/40",
               "flex gap-0.5 overflow-x-auto p-2 md:flex-col md:overflow-visible",
-              "md:w-52 md:border-r md:p-3",
+              "md:w-56 md:border-r md:p-4",
               "border-b md:border-b-0"
             )}
           >
@@ -272,7 +272,7 @@ export function BlockDetailPanel({
           </nav>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-2xl px-6 py-6">
+            <div className="mx-auto max-w-3xl px-8 py-6">
               {tab === "overview" ? (
                 <div className="space-y-5">
                   <Field label="Beschreibung">
