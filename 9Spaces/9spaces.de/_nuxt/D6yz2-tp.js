@@ -1,1 +1,0 @@
-import{u as a,T as e,a as r,p as m}from"./B34gsgcg.js";const p=t=>{const n=a(t),o=a(t.image);return{...m(["id","content","cookieName"],n),__component:n.__component||"banner.promo-banner",image:o&&r(o,"small"),button:e({text:n.buttonText,url:n.buttonLink})}};export{p as t};

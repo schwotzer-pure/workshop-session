@@ -47,3 +47,4 @@ next-env.d.ts
 # Claude Code workspace artefacts (keep launch.json, ignore the rest)
 .claude/*
 !.claude/launch.json
+9Spaces/
