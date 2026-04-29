@@ -12,6 +12,7 @@ import {
   Columns3,
   StickyNote,
   Square,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -32,6 +33,7 @@ import type { BlockData } from "./types";
 import { PersonPicker } from "./person-picker";
 import { TaskList, type TaskItem } from "./task-list";
 import { MaterialList, type MaterialItem } from "./material-list";
+import { CommentList, type CommentItem } from "./comment-list";
 
 const TYPE_LABEL = {
   BLOCK: { label: "Block", Icon: Square },
@@ -43,6 +45,7 @@ const TYPE_LABEL = {
 export type BlockDetailData = BlockData & {
   tasks: TaskItem[];
   materials: MaterialItem[];
+  comments: CommentItem[];
   assignedTo: AppUserListItem | null;
 };
 
@@ -57,6 +60,8 @@ export function BlockDetailPanel({
   categoryColor,
   computedStartTime,
   computedEndTime,
+  currentUserId,
+  isAdmin,
   onUpdate,
 }: {
   open: boolean;
@@ -69,11 +74,13 @@ export function BlockDetailPanel({
   categoryColor: string | null;
   computedStartTime: string;
   computedEndTime: string;
+  currentUserId: string;
+  isAdmin: boolean;
   onUpdate: (id: string, patch: Partial<BlockDetailData>) => void;
 }) {
-  const [tab, setTab] = useState<"overview" | "tasks" | "materials" | "people">(
-    "overview"
-  );
+  const [tab, setTab] = useState<
+    "overview" | "tasks" | "materials" | "people" | "comments"
+  >("overview");
   const [, startTransition] = useTransition();
 
   // Local-edit state for description / notes — kept in sync with prop changes
@@ -176,33 +183,33 @@ export function BlockDetailPanel({
         </SheetHeader>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList className="mx-6 mt-4 grid w-auto grid-cols-4">
+          <TabsList className="mx-6 mt-4 grid w-auto grid-cols-5">
             <TabsTrigger value="overview" className="text-xs">
-              <FileText className="mr-1.5 size-3.5" />
+              <FileText className="mr-1 size-3.5" />
               Details
             </TabsTrigger>
             <TabsTrigger value="tasks" className="text-xs">
-              <ListChecks className="mr-1.5 size-3.5" />
-              Aufgaben
+              <ListChecks className="mr-1 size-3.5" />
               {block.tasks.length > 0 ? (
-                <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] tabular-nums">
+                <span className="rounded-full bg-muted px-1 text-[10px] tabular-nums">
                   {block.tasks.filter((t) => !t.done).length}/
                   {block.tasks.length}
                 </span>
-              ) : null}
+              ) : (
+                "Aufgaben"
+              )}
             </TabsTrigger>
             <TabsTrigger value="materials" className="text-xs">
-              <Package className="mr-1.5 size-3.5" />
-              Material
-              {block.materials.length > 0 ? (
-                <span className="ml-1 rounded-full bg-muted px-1.5 text-[10px] tabular-nums">
-                  {block.materials.length}
-                </span>
-              ) : null}
+              <Package className="mr-1 size-3.5" />
+              {block.materials.length > 0 ? block.materials.length : "Material"}
             </TabsTrigger>
             <TabsTrigger value="people" className="text-xs">
-              <Users className="mr-1.5 size-3.5" />
+              <Users className="mr-1 size-3.5" />
               Personen
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="text-xs">
+              <MessageSquare className="mr-1 size-3.5" />
+              {block.comments.length > 0 ? block.comments.length : "Kommentare"}
             </TabsTrigger>
           </TabsList>
 
@@ -293,6 +300,20 @@ export function BlockDetailPanel({
             <p className="rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
               Workshop: <span className="font-medium">{workshopTitle}</span>
             </p>
+          </TabsContent>
+
+          <TabsContent value="comments" className="px-6 py-4">
+            <p className="mb-4 text-xs text-muted-foreground">
+              Diskussion zu diesem Block — sichtbar für alle Trainer:innen mit
+              Zugriff auf den Workshop.
+            </p>
+            <CommentList
+              workshopId={workshopId}
+              blockId={block.id}
+              comments={block.comments}
+              currentUserId={currentUserId}
+              isAdmin={isAdmin}
+            />
           </TabsContent>
         </Tabs>
       </SheetContent>

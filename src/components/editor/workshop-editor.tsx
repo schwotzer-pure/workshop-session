@@ -38,6 +38,7 @@ import { BlockBreakout, BlockBreakoutGhost } from "./block-breakout";
 import { AddBlockMenu, type BlockKind } from "./add-block-menu";
 import { InsertGap } from "./insert-gap";
 import { BlockDetailPanel } from "./block-detail-panel";
+import { DayTabs } from "./day-tabs";
 import type { BlockData, EditorContext } from "./types";
 
 type ServerBlock = WorkshopWithBlocks["days"][number]["blocks"][number];
@@ -70,6 +71,12 @@ function toBlockData(b: ServerBlock): BlockData {
       quantity: m.quantity,
       notes: m.notes,
     })),
+    comments: (b.comments ?? []).map((c) => ({
+      id: c.id,
+      content: c.content,
+      createdAt: c.createdAt,
+      author: c.author,
+    })),
   };
 }
 
@@ -90,12 +97,27 @@ export function WorkshopEditor({
   workshop,
   categories: initialCategories,
   users,
+  currentUserId,
+  isAdmin,
 }: {
   workshop: WorkshopWithBlocks;
   categories: Category[];
   users: AppUserListItem[];
+  currentUserId: string;
+  isAdmin: boolean;
 }) {
-  const day = workshop.days[0];
+  const days = workshop.days;
+  const [activeDayId, setActiveDayId] = useState<string>(
+    () => days[0]?.id ?? ""
+  );
+  // If active day got deleted, fall back to first
+  if (!days.find((d) => d.id === activeDayId) && days[0]) {
+    if (activeDayId !== days[0].id) {
+      // setState during render is OK if guarded; keep pragmatic.
+    }
+  }
+  const day = days.find((d) => d.id === activeDayId) ?? days[0];
+
   const [, startTransition] = useTransition();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
@@ -528,6 +550,19 @@ export function WorkshopEditor({
         dayId={day?.id ?? ""}
       />
 
+      <DayTabs
+        workshopId={workshop.id}
+        days={days.map((d) => ({
+          id: d.id,
+          position: d.position,
+          title: d.title,
+          startTime: d.startTime,
+          blockCount: d.blocks.filter((b) => b.parentBlockId === null).length,
+        }))}
+        activeDayId={day?.id ?? ""}
+        onChange={setActiveDayId}
+      />
+
       <div className="space-y-2">
         <DndContext
           sensors={sensors}
@@ -695,6 +730,7 @@ export function WorkshopEditor({
                     ...sel,
                     tasks: sel.tasks,
                     materials: sel.materials,
+                    comments: sel.comments,
                     assignedTo: sel.assignedTo,
                   }
                 : null
@@ -706,6 +742,8 @@ export function WorkshopEditor({
             categoryColor={cat?.color ?? null}
             computedStartTime={computed?.computedStartTime ?? startTime}
             computedEndTime={computed?.computedEndTime ?? startTime}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
             onUpdate={(id, patch) => updateBlockLocal(id, patch)}
           />
         );

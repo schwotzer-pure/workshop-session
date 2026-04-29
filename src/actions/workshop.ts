@@ -287,6 +287,7 @@ const UpdateDaySchema = z.object({
   dayId: z.string(),
   startTime: z.string().regex(/^([01]?\d|2[0-3]):[0-5]\d$/).optional(),
   title: z.string().nullable().optional(),
+  date: z.string().nullable().optional(),
 });
 
 export async function updateDayAction(input: z.input<typeof UpdateDaySchema>) {
@@ -297,8 +298,61 @@ export async function updateDayAction(input: z.input<typeof UpdateDaySchema>) {
     data: {
       startTime: data.startTime,
       title: data.title,
+      date: data.date ? new Date(data.date) : data.date === null ? null : undefined,
     },
     select: { workshopId: true },
   });
+  revalidatePath(`/sessions/${day.workshopId}`);
+}
+
+export async function addDayAction(workshopId: string) {
+  await requireUser();
+  const last = await prisma.day.findFirst({
+    where: { workshopId },
+    orderBy: { position: "desc" },
+    select: { position: true, startTime: true },
+  });
+  const day = await prisma.day.create({
+    data: {
+      workshopId,
+      position: (last?.position ?? -1) + 1,
+      startTime: last?.startTime ?? "09:00",
+      title: `Tag ${(last?.position ?? -1) + 2}`,
+    },
+  });
+  revalidatePath(`/sessions/${workshopId}`);
+  return day;
+}
+
+export async function removeDayAction(dayId: string) {
+  await requireUser();
+  const day = await prisma.day.findUnique({
+    where: { id: dayId },
+    select: { workshopId: true, position: true },
+  });
+  if (!day) return;
+
+  const dayCount = await prisma.day.count({ where: { workshopId: day.workshopId } });
+  if (dayCount <= 1) {
+    throw new Error("Der letzte Tag kann nicht gelöscht werden");
+  }
+
+  await prisma.day.delete({ where: { id: dayId } });
+
+  // Compact remaining day positions
+  const remaining = await prisma.day.findMany({
+    where: { workshopId: day.workshopId },
+    orderBy: { position: "asc" },
+    select: { id: true, position: true },
+  });
+  await prisma.$transaction(
+    remaining.map((d, idx) =>
+      prisma.day.update({
+        where: { id: d.id },
+        data: { position: idx },
+      })
+    )
+  );
+
   revalidatePath(`/sessions/${day.workshopId}`);
 }

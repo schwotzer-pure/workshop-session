@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, PlayCircle, Printer, Radio } from "lucide-react";
+import { ArrowLeft, BarChart3, PlayCircle, Printer, Radio } from "lucide-react";
 import { auth } from "@/auth/auth";
 import { Sidebar } from "@/components/sidebar";
 import { UserMenu } from "@/components/user-menu";
@@ -19,6 +19,7 @@ import { WorkshopEditor } from "@/components/editor/workshop-editor";
 import { VersionsTrigger } from "@/components/editor/versions-trigger";
 import { LibrarySidebarTrigger } from "@/components/editor/library-sidebar";
 import { SubmitTemplateButton } from "@/components/editor/submit-template-dialog";
+import { ShareWorkshopButton } from "@/components/editor/share-dialog";
 
 export default async function SessionDetailPage({
   params,
@@ -67,12 +68,36 @@ export default async function SessionDetailPage({
             {dayId ? (
               <LibrarySidebarTrigger methods={methods} dayId={dayId} />
             ) : null}
+            <ShareWorkshopButton
+              workshopId={id}
+              ownerName={workshop.createdBy.name}
+              allUsers={users}
+              currentUserId={session.user.id}
+              initialShares={workshop.shares.map((s) => ({
+                user: {
+                  id: s.user.id,
+                  name: s.user.name,
+                  username: s.user.username,
+                  email: s.user.email,
+                  avatarUrl: null,
+                },
+                canEdit: s.canEdit,
+              }))}
+            />
             <SubmitTemplateButton
               workshopId={id}
               defaultTitle={workshop.title}
               defaultDescription={workshop.description}
             />
             <VersionsTrigger workshopId={id} initialVersions={versions} />
+            <Link
+              href={`/sessions/${id}/overview`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
+              title="Workshop-Übersicht"
+            >
+              <BarChart3 className="size-4" />
+              Übersicht
+            </Link>
             <Link
               href={`/sessions/${id}/print`}
               className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
@@ -111,7 +136,13 @@ export default async function SessionDetailPage({
           </div>
         </header>
         <main className="flex-1 px-8 py-8">
-          <WorkshopEditor workshop={workshop} categories={categories} users={users} />
+          <WorkshopEditor
+            workshop={workshop}
+            categories={categories}
+            users={users}
+            currentUserId={session.user.id}
+            isAdmin={session.user.role === "ADMIN"}
+          />
         </main>
       </div>
     </div>

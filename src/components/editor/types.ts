@@ -1,6 +1,7 @@
 import type { AppUserListItem, Category } from "@/lib/queries";
 import type { TaskItem } from "./task-list";
 import type { MaterialItem } from "./material-list";
+import type { CommentItem } from "./comment-list";
 
 export type BlockKind = "BLOCK" | "GROUP" | "BREAKOUT" | "NOTE";
 
@@ -21,6 +22,7 @@ export type BlockData = {
   assignedTo: AppUserListItem | null;
   tasks: TaskItem[];
   materials: MaterialItem[];
+  comments: CommentItem[];
 };
 
 export type EditorContext = {

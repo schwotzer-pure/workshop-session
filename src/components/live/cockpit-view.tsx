@@ -98,33 +98,36 @@ export function CockpitView({
 
   return (
     <div className="aurora-bg flex min-h-screen flex-col">
-      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/60 bg-background/80 px-6 backdrop-blur-xl">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-border/60 bg-background/80 px-3 backdrop-blur-xl sm:h-16 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Link
             href={`/sessions/${workshopId}`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+            aria-label="Zum Editor"
           >
             <ArrowLeft className="size-3.5" />
-            Editor
+            <span className="hidden sm:inline">Editor</span>
           </Link>
-          <span className="h-4 w-px bg-border" />
-          <span className="text-sm font-medium">{live.workshopTitle}</span>
+          <span className="hidden h-4 w-px bg-border sm:inline-block" />
+          <span className="truncate text-sm font-medium">{live.workshopTitle}</span>
           <StatusBadge status={live.status} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href={`/sessions/${workshopId}/live/display`}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-xs font-medium hover:border-[var(--neon-violet)]/40 hover:bg-background/80"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 text-xs font-medium hover:border-[var(--neon-violet)]/40 hover:bg-background/80 sm:px-3 sm:py-1.5"
+            aria-label="Beamer-Ansicht öffnen"
           >
             <ExternalLink className="size-3.5" />
-            Beamer-Ansicht öffnen
+            <span className="hidden sm:inline">Beamer-Ansicht öffnen</span>
+            <span className="sm:hidden">Beamer</span>
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto grid w-full max-w-6xl flex-1 gap-6 px-6 py-8 lg:grid-cols-[1fr,320px]">
+      <main className="mx-auto grid w-full max-w-6xl flex-1 gap-4 px-3 py-4 sm:gap-6 sm:px-6 sm:py-8 lg:grid-cols-[1fr,320px]">
         <div className="space-y-6">
           {currentStep && !isEnded ? (
             <CurrentStepCard
@@ -236,7 +239,7 @@ function CurrentStepCard({
       ? Columns3
       : null;
   return (
-    <div className="glass-card relative overflow-hidden rounded-3xl p-8">
+    <div className="glass-card relative overflow-hidden rounded-2xl p-4 sm:rounded-3xl sm:p-8">
       <div
         className={cn(
           "pointer-events-none absolute -right-32 -top-32 size-96 rounded-full bg-gradient-to-br opacity-30 blur-3xl",
@@ -245,10 +248,10 @@ function CurrentStepCard({
             : "from-[var(--neon-violet)]/30 to-transparent"
         )}
       />
-      <div className="relative space-y-6">
+      <div className="relative space-y-4 sm:space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <span>
                 Schritt {stepIdx + 1} / {totalSteps}
               </span>
@@ -262,14 +265,14 @@ function CurrentStepCard({
                 </span>
               ) : null}
             </div>
-            <h2 className="flex items-start gap-2 text-3xl font-semibold tracking-tight">
-              {Icon ? <Icon className="mt-1 size-6 text-[var(--neon-violet)]" /> : null}
+            <h2 className="flex items-start gap-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              {Icon ? <Icon className="mt-1 size-5 text-[var(--neon-violet)] sm:size-6" /> : null}
               <span>{step.title || "Unbenannter Block"}</span>
             </h2>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 rounded-2xl border border-border/60 bg-background/40 p-4">
+        <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/60 bg-background/40 p-3 sm:gap-4 sm:p-4">
           <Stat label="Soll" value={`${step.duration} min`} />
           <Stat label="Ist" value={formatTimer(elapsedSec)} highlight={isPaused} />
           <Stat
@@ -389,7 +392,7 @@ function Stat({
       </div>
       <div
         className={cn(
-          "text-2xl font-semibold tabular-nums",
+          "text-lg font-semibold tabular-nums sm:text-2xl",
           tone === "danger" && "text-[var(--neon-pink)]",
           highlight && "animate-pulse"
         )}
@@ -420,23 +423,24 @@ function Controls({
   onEnd: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <Button
         type="button"
         variant="outline"
         size="lg"
         onClick={onPrevious}
         disabled={isFirst}
+        className="flex-1 sm:flex-initial"
       >
         <ChevronLeft className="size-4" />
-        Vorher
+        <span className="hidden sm:inline">Vorher</span>
       </Button>
       <Button
         type="button"
         size="lg"
         onClick={onPauseToggle}
         className={cn(
-          "min-w-32",
+          "flex-1 sm:min-w-32 sm:flex-initial",
           isPaused
             ? "bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-violet)] text-white"
             : "bg-[var(--neon-pink)]/15 text-[var(--neon-pink)] hover:bg-[var(--neon-pink)]/25"
@@ -459,21 +463,20 @@ function Controls({
         size="lg"
         onClick={onNext}
         disabled={isLast}
-        className="bg-gradient-to-r from-[var(--neon-violet)] to-[var(--neon-pink)] text-white"
+        className="flex-1 bg-gradient-to-r from-[var(--neon-violet)] to-[var(--neon-pink)] text-white sm:flex-initial"
       >
-        Nächster
+        <span className="hidden sm:inline">Nächster</span>
         <ChevronRight className="size-4" />
       </Button>
-      <span className="ml-auto" />
       <Button
         type="button"
         variant="ghost"
         size="lg"
         onClick={onEnd}
-        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        className="ml-auto text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
       >
         <Square className="size-4" />
-        Beenden
+        <span className="hidden sm:inline">Beenden</span>
       </Button>
     </div>
   );

@@ -202,6 +202,13 @@ export async function getWorkshopWithBlocks(workshopId: string) {
       createdBy: {
         select: { id: true, name: true, username: true },
       },
+      shares: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true, email: true },
+          },
+        },
+      },
       days: {
         orderBy: { position: "asc" },
         include: {
@@ -226,6 +233,14 @@ export async function getWorkshopWithBlocks(workshopId: string) {
               },
               materials: {
                 orderBy: { name: "asc" },
+              },
+              comments: {
+                orderBy: { createdAt: "asc" },
+                include: {
+                  author: {
+                    select: { id: true, name: true, username: true },
+                  },
+                },
               },
             },
           },
@@ -276,6 +291,12 @@ export async function getBlockDetails(blockId: string) {
       },
       materials: {
         orderBy: { name: "asc" },
+      },
+      comments: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: { select: { id: true, name: true, username: true } },
+        },
       },
     },
   });
