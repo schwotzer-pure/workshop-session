@@ -34,6 +34,12 @@ enum LiveStatus {
   ENDED
 }
 
+enum TemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Organization {
   id          String   @id @default(cuid())
   name        String
@@ -65,7 +71,9 @@ model User {
 
   workshops         Workshop[]        @relation("WorkshopCreator")
   assignedBlocks    Block[]           @relation("BlockAssignee")
-  templates         Template[]
+  createdTemplates  Template[]        @relation("TemplateCreator")
+  approvedTemplates Template[]        @relation("TemplateApprover")
+  templateRatings   TemplateRating[]
   methods           Method[]
   comments          Comment[]
   liveControllers   LiveSession[]     @relation("LiveController")
@@ -254,21 +262,52 @@ model Method {
 }
 
 model Template {
-  id          String   @id @default(cuid())
-  title       String
-  description String?  @db.Text
-  tags        String[] @default([])
-  duration    Int      @default(0)
-  blocksJson  Json
-  isPublic    Boolean  @default(false)
-  isOrgWide   Boolean  @default(false)
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String         @id @default(cuid())
+  title           String
+  description     String?        @db.Text
+  /// Required theme (e.g. "Leadership", "Strategie", "Onboarding").
+  theme           String
+  tags            String[]       @default([])
+  duration        Int            @default(0)
+  /// Full workshop snapshot (same shape as WorkshopVersion).
+  blocksJson      Json
+  status          TemplateStatus @default(PENDING)
+  rejectedReason  String?
+  /// Denormalized rating cache for cheap sorts.
+  avgRating       Float?
+  ratingCount     Int            @default(0)
+  /// How many times this template was used to spawn a workshop.
+  useCount        Int            @default(0)
+  createdById     String
+  approvedById    String?
+  approvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdBy   User             @relation("TemplateCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  approvedBy  User?            @relation("TemplateApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  ratings     TemplateRating[]
 
   @@index([createdById])
+  @@index([status])
+  @@index([theme])
+}
+
+model TemplateRating {
+  id         String   @id @default(cuid())
+  templateId String
+  userId     String
+  score      Int      // 1..5
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  template Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, userId])
+  @@index([templateId])
+  @@index([userId])
 }
 
 model LiveSession {

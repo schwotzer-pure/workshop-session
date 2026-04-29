@@ -11,11 +11,14 @@ import {
   listAllUsers,
   getOrganization,
   listWorkshopVersions,
+  listMethods,
 } from "@/lib/queries";
 import { getActiveLiveSessionForWorkshop } from "@/lib/live";
 import { startLiveSessionAction } from "@/actions/live";
 import { WorkshopEditor } from "@/components/editor/workshop-editor";
 import { VersionsTrigger } from "@/components/editor/versions-trigger";
+import { LibrarySidebarTrigger } from "@/components/editor/library-sidebar";
+import { SubmitTemplateButton } from "@/components/editor/submit-template-dialog";
 
 export default async function SessionDetailPage({
   params,
@@ -26,7 +29,7 @@ export default async function SessionDetailPage({
   if (!session?.user?.id) redirect("/login");
 
   const { id } = await params;
-  const [workshop, categories, users, activeLive, userOrg, versions] =
+  const [workshop, categories, users, activeLive, userOrg, versions, methods] =
     await Promise.all([
       getWorkshopWithBlocks(id),
       getCategoriesForUser(session.user.id),
@@ -36,8 +39,10 @@ export default async function SessionDetailPage({
         ? getOrganization(session.user.organizationId)
         : Promise.resolve(null),
       listWorkshopVersions(id),
+      listMethods(),
     ]);
   if (!workshop) notFound();
+  const dayId = workshop.days[0]?.id ?? "";
 
   return (
     <div className="aurora-bg flex min-h-screen">
@@ -59,6 +64,14 @@ export default async function SessionDetailPage({
             Zurück zu Sessions
           </Link>
           <div className="flex items-center gap-3">
+            {dayId ? (
+              <LibrarySidebarTrigger methods={methods} dayId={dayId} />
+            ) : null}
+            <SubmitTemplateButton
+              workshopId={id}
+              defaultTitle={workshop.title}
+              defaultDescription={workshop.description}
+            />
             <VersionsTrigger workshopId={id} initialVersions={versions} />
             <Link
               href={`/sessions/${id}/print`}

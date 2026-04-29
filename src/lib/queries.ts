@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { recalcBlocks, totalDuration } from "@/lib/recalc";
@@ -101,12 +102,80 @@ export async function getOrganizationsInUnion() {
   });
 }
 
-export async function getOrganization(orgId: string) {
-  return prisma.organization.findUnique({
-    where: { id: orgId },
-    select: { id: true, name: true, slug: true, parentOrgId: true },
+export const getOrganization = unstable_cache(
+  async (orgId: string) =>
+    prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { id: true, name: true, slug: true, parentOrgId: true },
+    }),
+  ["organization"],
+  { revalidate: 600, tags: ["organizations"] }
+);
+
+export const listMethods = unstable_cache(
+  async () =>
+    prisma.method.findMany({
+      orderBy: [{ category: "asc" }, { title: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        defaultDuration: true,
+        category: true,
+        tags: true,
+        isPublic: true,
+      },
+    }),
+  ["methods:all"],
+  { revalidate: 300, tags: ["methods"] }
+);
+
+export type MethodListItem = Awaited<ReturnType<typeof listMethods>>[number];
+
+export async function listTemplatesForUser(
+  userId: string,
+  filter: "approved" | "mine" | "pending" = "approved"
+) {
+  const where =
+    filter === "approved"
+      ? { status: "APPROVED" as const }
+      : filter === "mine"
+      ? { createdById: userId }
+      : { status: "PENDING" as const };
+
+  return prisma.template.findMany({
+    where,
+    orderBy:
+      filter === "approved"
+        ? [{ avgRating: "desc" }, { createdAt: "desc" }]
+        : { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      theme: true,
+      tags: true,
+      duration: true,
+      status: true,
+      rejectedReason: true,
+      avgRating: true,
+      ratingCount: true,
+      useCount: true,
+      createdAt: true,
+      approvedAt: true,
+      createdBy: { select: { id: true, name: true, username: true } },
+      approvedBy: { select: { id: true, name: true } },
+      ratings: {
+        where: { userId },
+        select: { score: true, comment: true },
+      },
+    },
   });
 }
+
+export type TemplateListItem = Awaited<
+  ReturnType<typeof listTemplatesForUser>
+>[number];
 
 export async function listWorkshopVersions(workshopId: string) {
   return prisma.workshopVersion.findMany({
@@ -166,27 +235,33 @@ export async function getWorkshopWithBlocks(workshopId: string) {
   });
 }
 
-export async function getCategoriesForUser(userId: string) {
-  return prisma.blockCategory.findMany({
-    where: {
-      OR: [{ isSystem: true }, { createdById: userId }],
-    },
-    orderBy: [{ isSystem: "desc" }, { position: "asc" }],
-  });
-}
+export const getCategoriesForUser = unstable_cache(
+  async (userId: string) =>
+    prisma.blockCategory.findMany({
+      where: {
+        OR: [{ isSystem: true }, { createdById: userId }],
+      },
+      orderBy: [{ isSystem: "desc" }, { position: "asc" }],
+    }),
+  ["categories:user"],
+  { revalidate: 120, tags: ["categories"] }
+);
 
-export async function listAllUsers() {
-  return prisma.user.findMany({
-    orderBy: { name: "asc" },
-    select: {
-      id: true,
-      name: true,
-      username: true,
-      email: true,
-      avatarUrl: true,
-    },
-  });
-}
+export const listAllUsers = unstable_cache(
+  async () =>
+    prisma.user.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+      },
+    }),
+  ["users:all"],
+  { revalidate: 300, tags: ["users"] }
+);
 
 export async function getBlockDetails(blockId: string) {
   return prisma.block.findUnique({
