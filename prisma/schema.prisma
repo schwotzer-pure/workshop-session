@@ -1,0 +1,308 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  TRAINER
+}
+
+enum WorkshopStatus {
+  DRAFT
+  SCHEDULED
+  RUNNING
+  COMPLETED
+  ARCHIVED
+}
+
+enum BlockType {
+  BLOCK
+  GROUP
+  BREAKOUT
+  NOTE
+}
+
+enum LiveStatus {
+  IDLE
+  RUNNING
+  PAUSED
+  ENDED
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  parentOrgId String?
+  parentOrg   Organization?  @relation("OrgHierarchy", fields: [parentOrgId], references: [id])
+  children    Organization[] @relation("OrgHierarchy")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users     User[]
+  workshops Workshop[]
+
+  @@index([parentOrgId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  name      String
+  email     String?  @unique
+  role      UserRole @default(TRAINER)
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  workshops         Workshop[]        @relation("WorkshopCreator")
+  assignedBlocks    Block[]           @relation("BlockAssignee")
+  templates         Template[]
+  methods           Method[]
+  comments          Comment[]
+  liveControllers   LiveSession[]     @relation("LiveController")
+  sharedWorkshops   WorkshopShare[]
+  blockCategories   BlockCategory[]
+  workshopVersions  WorkshopVersion[]
+
+  @@index([organizationId])
+}
+
+model BlockCategory {
+  id          String   @id @default(cuid())
+  name        String
+  color       String   // oklch / hex string used in UI
+  position    Int      @default(0)
+  isSystem    Boolean  @default(false)
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  blocks    Block[]
+
+  @@index([createdById])
+}
+
+model Workshop {
+  id          String         @id @default(cuid())
+  title       String         @default("Untitled session")
+  description String?        @db.Text
+  status      WorkshopStatus @default(DRAFT)
+  clientName  String?
+  tags        String[]       @default([])
+  startDate   DateTime?
+  timezone    String         @default("Europe/Zurich")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  createdById String
+  createdBy   User   @relation("WorkshopCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  days          Day[]
+  shares        WorkshopShare[]
+  comments      Comment[]
+  materials     Material[]
+  liveSessions  LiveSession[]
+  versions      WorkshopVersion[]
+
+  @@index([createdById])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model WorkshopVersion {
+  id          String   @id @default(cuid())
+  workshopId  String
+  workshop    Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  /// JSON snapshot of the entire workshop incl. days, blocks, tasks, materials.
+  snapshot    Json
+  /// Optional label set by the user (e.g. "vor der Galliker-Probe").
+  label       String?
+  /// "manual" | "auto" | "before_restore"
+  kind        String   @default("manual")
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([workshopId, createdAt])
+  @@index([createdById])
+}
+
+model WorkshopShare {
+  workshopId String
+  userId     String
+  canEdit    Boolean @default(true)
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([workshopId, userId])
+}
+
+model Day {
+  id         String   @id @default(cuid())
+  workshopId String
+  position   Int
+  title      String?
+  startTime  String   @default("09:00")
+  date       DateTime?
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  blocks   Block[]
+
+  @@unique([workshopId, position])
+  @@index([workshopId])
+}
+
+model Block {
+  id          String    @id @default(cuid())
+  dayId       String
+  position    Int
+  /// For BREAKOUT-children: which parallel column (track) the block lives in.
+  /// Ignored for top-level and GROUP-children.
+  column      Int       @default(0)
+  type        BlockType @default(BLOCK)
+  title       String    @default("")
+  description String?   @db.Text
+  /// Trainer-only notes — visible in editor, hidden in display view.
+  notes       String?   @db.Text
+  duration    Int       @default(15)
+  locked      Boolean   @default(false)
+  startTime   String?
+
+  parentBlockId String?
+  parentBlock   Block?  @relation("BlockChildren", fields: [parentBlockId], references: [id], onDelete: Cascade)
+  childBlocks   Block[] @relation("BlockChildren")
+
+  categoryId String?
+  category   BlockCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  methodId String?
+  method   Method? @relation(fields: [methodId], references: [id], onDelete: SetNull)
+
+  assignedToId String?
+  assignedTo   User?   @relation("BlockAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  day       Day        @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+  comments  Comment[]
+  materials Material[]
+
+  @@index([dayId])
+  @@index([parentBlockId])
+  @@index([methodId])
+  @@index([categoryId])
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  blockId   String
+  text      String
+  done      Boolean  @default(false)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  block Block @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@index([blockId])
+}
+
+model Material {
+  id         String  @id @default(cuid())
+  workshopId String
+  blockId    String?
+  name       String
+  quantity   Int?
+  notes      String?
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  block    Block?   @relation(fields: [blockId], references: [id], onDelete: SetNull)
+
+  @@index([workshopId])
+}
+
+model Method {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?  @db.Text
+  instructions    String?  @db.Text
+  defaultDuration Int      @default(15)
+  category        String?
+  tags            String[] @default([])
+  isPublic        Boolean  @default(false)
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy User    @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  blocks    Block[]
+
+  @@index([createdById])
+  @@index([category])
+}
+
+model Template {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  tags        String[] @default([])
+  duration    Int      @default(0)
+  blocksJson  Json
+  isPublic    Boolean  @default(false)
+  isOrgWide   Boolean  @default(false)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+}
+
+model LiveSession {
+  id              String     @id @default(cuid())
+  workshopId      String
+  controllerId    String
+  status          LiveStatus @default(IDLE)
+  currentBlockId  String?
+  startedAt       DateTime?
+  pausedAt        DateTime?
+  endedAt         DateTime?
+  blockTimings    Json       @default("[]")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  controller User     @relation("LiveController", fields: [controllerId], references: [id], onDelete: Cascade)
+
+  @@index([workshopId])
+  @@index([status])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  workshopId String
+  blockId    String?
+  authorId   String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  block    Block?   @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([workshopId])
+  @@index([blockId])
+}
