@@ -77,6 +77,12 @@ export async function startLiveSessionAction(workshopId: string) {
     },
   });
 
+  // Auto-set workshop status to RUNNING (unless ARCHIVED)
+  await prisma.workshop.updateMany({
+    where: { id: workshopId, status: { not: "ARCHIVED" } },
+    data: { status: "RUNNING" },
+  });
+
   revalidatePath(`/sessions/${workshopId}`);
   redirect(`/sessions/${workshopId}/live/cockpit`);
 }
@@ -205,6 +211,12 @@ export async function endLiveSessionAction(input: z.input<typeof NavigateSchema>
       endedAt: now,
       blockTimings: updated,
     },
+  });
+
+  // Auto-set workshop status to COMPLETED (unless ARCHIVED)
+  await prisma.workshop.updateMany({
+    where: { id: ls.workshopId, status: { not: "ARCHIVED" } },
+    data: { status: "COMPLETED" },
   });
 
   revalidatePath(`/sessions/${ls.workshopId}`);

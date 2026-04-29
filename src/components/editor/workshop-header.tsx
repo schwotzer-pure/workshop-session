@@ -6,12 +6,14 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { updateWorkshopAction, updateDayAction } from "@/actions/workshop";
 import { formatDuration, isValidHhmm } from "@/lib/time";
+import { StatusPicker, type WorkshopStatusValue } from "./status-picker";
 
 export function WorkshopHeader({
   workshopId,
   title,
   clientName,
   tags,
+  status,
   startDate,
   startTime,
   endTime,
@@ -23,6 +25,7 @@ export function WorkshopHeader({
   title: string;
   clientName: string | null;
   tags: string[];
+  status: WorkshopStatusValue;
   startDate: Date | null;
   startTime: string;
   endTime: string;
@@ -52,6 +55,9 @@ export function WorkshopHeader({
   return (
     <div className="space-y-4 pb-2">
       <div className="space-y-2">
+        <div className="flex items-center gap-3">
+          <StatusPicker workshopId={workshopId} value={status} />
+        </div>
         <input
           type="text"
           value={titleValue}

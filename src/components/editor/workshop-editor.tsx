@@ -519,6 +519,7 @@ export function WorkshopEditor({
         title={workshop.title}
         clientName={workshop.clientName}
         tags={workshop.tags}
+        status={workshop.status}
         startDate={workshop.startDate}
         startTime={startTime}
         endTime={endTime}

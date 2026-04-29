@@ -66,6 +66,48 @@ export async function updateWorkshopAction(input: z.input<typeof UpdateWorkshopS
     },
   });
 
+  // Auto-status: when a future date is set on a DRAFT workshop, promote to SCHEDULED.
+  // When the date is removed and we're SCHEDULED (and not RUNNING/COMPLETED/ARCHIVED), drop back to DRAFT.
+  if (data.startDate !== undefined) {
+    const ws = await prisma.workshop.findUnique({
+      where: { id: data.id },
+      select: { status: true, startDate: true },
+    });
+    if (ws && ws.status !== "ARCHIVED" && ws.status !== "RUNNING" && ws.status !== "COMPLETED") {
+      const isFuture = ws.startDate && new Date(ws.startDate).getTime() > Date.now();
+      const target: "DRAFT" | "SCHEDULED" = isFuture ? "SCHEDULED" : "DRAFT";
+      if (target !== ws.status) {
+        await prisma.workshop.update({
+          where: { id: data.id },
+          data: { status: target },
+        });
+      }
+    }
+  }
+
+  revalidatePath(`/sessions/${data.id}`);
+  revalidatePath("/dashboard");
+}
+
+const SetStatusSchema = z.object({
+  id: z.string(),
+  status: z.enum(["DRAFT", "SCHEDULED", "RUNNING", "COMPLETED"]),
+});
+
+/**
+ * Manually set the workshop status. ARCHIVED has its own dedicated actions.
+ */
+export async function setWorkshopStatusAction(
+  input: z.input<typeof SetStatusSchema>
+) {
+  await requireUser();
+  const data = SetStatusSchema.parse(input);
+
+  await prisma.workshop.update({
+    where: { id: data.id },
+    data: { status: data.status },
+  });
+
   revalidatePath(`/sessions/${data.id}`);
   revalidatePath("/dashboard");
 }
