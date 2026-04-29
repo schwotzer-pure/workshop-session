@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BarChart3, PlayCircle, Printer, Radio } from "lucide-react";
+import { ArrowLeft, BarChart3, ClipboardCheck, PlayCircle, Printer, Radio } from "lucide-react";
 import { auth } from "@/auth/auth";
 import { Sidebar } from "@/components/sidebar";
 import { UserMenu } from "@/components/user-menu";
@@ -98,6 +98,16 @@ export default async function SessionDetailPage({
               <BarChart3 className="size-4" />
               Übersicht
             </Link>
+            {workshop.status === "COMPLETED" ? (
+              <Link
+                href={`/sessions/${id}/debrief`}
+                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--neon-cyan)]/40 bg-[var(--neon-cyan)]/[0.08] px-3 py-1.5 text-sm font-medium text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/15"
+                title="Soll/Ist-Auswertung"
+              >
+                <ClipboardCheck className="size-4" />
+                Auswertung
+              </Link>
+            ) : null}
             <Link
               href={`/sessions/${id}/print`}
               className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"

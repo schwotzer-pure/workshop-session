@@ -77,6 +77,7 @@ model User {
   methods           Method[]
   comments          Comment[]
   liveControllers   LiveSession[]     @relation("LiveController")
+  coachNotes        CoachNote[]       @relation("CoachNoteAuthor")
   sharedWorkshops   WorkshopShare[]
   blockCategories   BlockCategory[]
   workshopVersions  WorkshopVersion[]
@@ -323,11 +324,29 @@ model LiveSession {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
-  workshop   Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
-  controller User     @relation("LiveController", fields: [controllerId], references: [id], onDelete: Cascade)
+  workshop   Workshop    @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  controller User        @relation("LiveController", fields: [controllerId], references: [id], onDelete: Cascade)
+  coachNotes CoachNote[]
 
   @@index([workshopId])
   @@index([status])
+}
+
+/// Live whisper notes from a co-trainer to the controller — silent, ephemeral.
+model CoachNote {
+  id            String      @id @default(cuid())
+  liveSessionId String
+  authorId      String
+  content       String      @db.Text
+  /// Which block was current when the note was sent (purely for context).
+  blockId       String?
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+
+  liveSession LiveSession @relation(fields: [liveSessionId], references: [id], onDelete: Cascade)
+  author      User        @relation("CoachNoteAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([liveSessionId, createdAt])
 }
 
 model Comment {

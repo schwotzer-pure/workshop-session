@@ -6,12 +6,10 @@ import {
   getActiveLiveSessionForWorkshop,
   getLiveState,
 } from "@/lib/live";
-import { startLiveSessionAction } from "@/actions/live";
-import { Button } from "@/components/ui/button";
-import { CockpitView } from "@/components/live/cockpit-view";
+import { CoachView } from "@/components/live/coach-view";
 import { prisma } from "@/lib/prisma";
 
-export default async function CockpitPage({
+export default async function CoachPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -33,17 +31,10 @@ export default async function CockpitPage({
         <div className="glass-card max-w-md rounded-2xl p-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">{ws.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Diese Session ist noch nicht live.
+            Diese Session ist gerade nicht live. Du kannst Hinweise erst
+            schicken, wenn der/die Hauptmoderierende den Live-Modus
+            gestartet hat.
           </p>
-          <form action={startLiveSessionAction.bind(null, id)} className="mt-6">
-            <Button
-              type="submit"
-              size="lg"
-              className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white"
-            >
-              Jetzt live starten
-            </Button>
-          </form>
           <Link
             href={`/sessions/${id}`}
             className="mt-6 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
@@ -60,7 +51,7 @@ export default async function CockpitPage({
   if (!initial) notFound();
 
   return (
-    <CockpitView
+    <CoachView
       workshopId={id}
       liveSessionId={active.id}
       initial={initial}

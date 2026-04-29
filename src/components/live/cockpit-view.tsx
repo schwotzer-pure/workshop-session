@@ -14,6 +14,7 @@ import {
   Lock,
   Layers,
   Columns3,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -32,15 +33,20 @@ import {
   jumpToBlockAction,
 } from "@/actions/live";
 import type { LiveStateView, LiveBlockStep } from "@/lib/live";
+import { CoachNotesBadge } from "./coach-notes";
 
 export function CockpitView({
   workshopId,
   liveSessionId,
   initial,
+  currentUserId,
+  isAdmin,
 }: {
   workshopId: string;
   liveSessionId: string;
   initial: LiveStateView;
+  currentUserId: string;
+  isAdmin: boolean;
 }) {
   const { state } = useLiveSession(liveSessionId, initial, 1000);
   const live = state ?? initial;
@@ -113,6 +119,24 @@ export function CockpitView({
           <StatusBadge status={live.status} />
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <CoachNotesBadge
+            notes={live.coachNotes}
+            liveSessionId={liveSessionId}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+          />
+          <Link
+            href={`/sessions/${workshopId}/live/coach`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 text-xs font-medium hover:border-[var(--neon-violet)]/40 hover:bg-background/80 sm:px-3 sm:py-1.5"
+            aria-label="Co-Trainer-Modus öffnen"
+            title="Co-Trainer-Modus auf separatem Gerät öffnen"
+          >
+            <MessageCircle className="size-3.5" />
+            <span className="hidden sm:inline">Co-Trainer-Modus</span>
+            <span className="sm:hidden">Co</span>
+          </Link>
           <Link
             href={`/sessions/${workshopId}/live/display`}
             target="_blank"

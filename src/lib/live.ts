@@ -24,6 +24,19 @@ export type LiveBlockStep = {
   }>;
 };
 
+export type LiveCoachNote = {
+  id: string;
+  content: string;
+  createdAt: string;
+  resolvedAt: string | null;
+  blockId: string | null;
+  author: {
+    id: string;
+    name: string;
+    username: string;
+  };
+};
+
 export type LiveStateView = {
   liveSessionId: string;
   workshopId: string;
@@ -38,6 +51,8 @@ export type LiveStateView = {
   /** When the current step is supposed to end (computed from actualStart + duration) */
   currentStepActualStartedAt: string | null;
   currentStepPausedSecondsAccrued: number;
+  /** Coach notes from co-trainers, newest first */
+  coachNotes: LiveCoachNote[];
 };
 
 type StoredTiming = {
@@ -61,6 +76,14 @@ export async function getLiveState(liveSessionId: string): Promise<LiveStateView
                 include: { category: true },
               },
             },
+          },
+        },
+      },
+      coachNotes: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true },
           },
         },
       },
@@ -153,6 +176,18 @@ export async function getLiveState(liveSessionId: string): Promise<LiveStateView
     steps: liveSteps,
     currentStepActualStartedAt: currentTiming?.actualStart ?? null,
     currentStepPausedSecondsAccrued: currentTiming?.pausedSecondsAccrued ?? 0,
+    coachNotes: ls.coachNotes.map((n) => ({
+      id: n.id,
+      content: n.content,
+      createdAt: n.createdAt.toISOString(),
+      resolvedAt: n.resolvedAt?.toISOString() ?? null,
+      blockId: n.blockId,
+      author: {
+        id: n.author.id,
+        name: n.author.name,
+        username: n.author.username,
+      },
+    })),
   };
 }
 
