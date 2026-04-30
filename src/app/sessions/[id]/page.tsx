@@ -1,6 +1,14 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, BarChart3, ClipboardCheck, PlayCircle, Printer, Radio } from "lucide-react";
+import {
+  ArrowLeft,
+  BarChart3,
+  ClipboardCheck,
+  PlayCircle,
+  Printer,
+  Radio,
+} from "lucide-react";
 import { auth } from "@/auth/auth";
 import { Sidebar } from "@/components/sidebar";
 import { UserMenu } from "@/components/user-menu";
@@ -31,15 +39,56 @@ export default async function SessionDetailPage({
   if (!session?.user?.id) redirect("/login");
 
   const { id } = await params;
-  const [workshop, categories, users, activeLive, userOrg, versions, methods, links] =
+  const userOrg = session.user.organizationId
+    ? await getOrganization(session.user.organizationId)
+    : null;
+
+  const sessionUser = {
+    id: session.user.id,
+    name: session.user.name ?? "Trainer",
+    username: session.user.username,
+    role: session.user.role,
+    email: session.user.email ?? "",
+    organizationName: userOrg?.name ?? null,
+  };
+
+  return (
+    <div className="aurora-bg flex min-h-screen" suppressHydrationWarning>
+      <Sidebar
+        user={{
+          name: sessionUser.name,
+          username: sessionUser.username,
+          role: sessionUser.role,
+          organizationName: sessionUser.organizationName,
+        }}
+      />
+      <Suspense fallback={<SessionContentSkeleton userName={sessionUser.name} />}>
+        <SessionContent id={id} sessionUser={sessionUser} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function SessionContent({
+  id,
+  sessionUser,
+}: {
+  id: string;
+  sessionUser: {
+    id: string;
+    name: string;
+    username: string;
+    role: string;
+    email: string;
+    organizationName: string | null;
+  };
+}) {
+  const [workshop, categories, users, activeLive, versions, methods, links] =
     await Promise.all([
       getWorkshopWithBlocks(id),
-      getCategoriesForUser(session.user.id),
+      getCategoriesForUser(sessionUser.id),
       listAllUsers(),
       getActiveLiveSessionForWorkshop(id),
-      session.user.organizationId
-        ? getOrganization(session.user.organizationId)
-        : Promise.resolve(null),
       listWorkshopVersions(id),
       listMethods(),
       getWorkshopLinks(id),
@@ -48,117 +97,139 @@ export default async function SessionDetailPage({
   const dayId = workshop.days[0]?.id ?? "";
 
   return (
-    <div className="aurora-bg flex min-h-screen">
-      <Sidebar
-        user={{
-          name: session.user.name ?? "Trainer",
-          username: session.user.username,
-          role: session.user.role,
-          organizationName: userOrg?.name ?? null,
-        }}
-      />
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/60 bg-background/70 px-8 backdrop-blur-xl">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Zurück zu Sessions
-          </Link>
-          <div className="flex items-center gap-3">
-            {dayId ? (
-              <LibrarySidebarTrigger methods={methods} dayId={dayId} />
-            ) : null}
-            <ShareWorkshopButton
-              workshopId={id}
-              ownerName={workshop.createdBy.name}
-              allUsers={users}
-              currentUserId={session.user.id}
-              initialShares={workshop.shares.map((s) => ({
-                user: {
-                  id: s.user.id,
-                  name: s.user.name,
-                  username: s.user.username,
-                  email: s.user.email,
-                  avatarUrl: null,
-                },
-                canEdit: s.canEdit,
-              }))}
-            />
-            <SubmitTemplateButton
-              workshopId={id}
-              defaultTitle={workshop.title}
-              defaultDescription={workshop.description}
-            />
-            <VersionsTrigger workshopId={id} initialVersions={versions} />
-            <Link
-              href={`/sessions/${id}/overview`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
-              title="Workshop-Übersicht"
-            >
-              <BarChart3 className="size-4" />
-              Übersicht
-            </Link>
-            {workshop.status === "COMPLETED" ? (
-              <Link
-                href={`/sessions/${id}/debrief`}
-                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--neon-cyan)]/40 bg-[var(--neon-cyan)]/[0.08] px-3 py-1.5 text-sm font-medium text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/15"
-                title="Soll/Ist-Auswertung"
-              >
-                <ClipboardCheck className="size-4" />
-                Auswertung
-              </Link>
-            ) : null}
-            <Link
-              href={`/sessions/${id}/print`}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
-              title="Druckansicht / als PDF speichern"
-            >
-              <Printer className="size-4" />
-              Drucken
-            </Link>
-            {activeLive ? (
-              <Link
-                href={`/sessions/${id}/live/cockpit`}
-                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--neon-pink)]/15 px-3 py-1.5 text-sm font-medium text-[var(--neon-pink)] hover:bg-[var(--neon-pink)]/25"
-              >
-                <Radio className="size-4 animate-pulse" />
-                Live ist aktiv
-              </Link>
-            ) : (
-              <form action={startLiveSessionAction.bind(null, id)}>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white shadow-[0_4px_20px_-6px_oklch(0.65_0.26_295/_0.5)] hover:opacity-95"
-                >
-                  <PlayCircle className="size-4" />
-                  Live starten
-                </Button>
-              </form>
-            )}
-            <UserMenu
-              user={{
-                name: session.user.name ?? "Trainer",
-                email: session.user.email ?? "",
-                role: session.user.role,
-              }}
-            />
-          </div>
-        </header>
-        <main className="flex-1 px-8 py-8">
-          <WorkshopEditor
-            workshop={workshop}
-            categories={categories}
-            users={users}
-            methods={methods}
-            workshopLinks={links}
-            currentUserId={session.user.id}
-            isAdmin={session.user.role === "ADMIN"}
+    <div className="flex min-h-screen flex-1 flex-col">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/60 bg-background/70 px-8 backdrop-blur-xl">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Zurück zu Sessions
+        </Link>
+        <div className="flex items-center gap-3">
+          {dayId ? (
+            <LibrarySidebarTrigger methods={methods} dayId={dayId} />
+          ) : null}
+          <ShareWorkshopButton
+            workshopId={id}
+            ownerName={workshop.createdBy.name}
+            allUsers={users}
+            currentUserId={sessionUser.id}
+            initialShares={workshop.shares.map((s) => ({
+              user: {
+                id: s.user.id,
+                name: s.user.name,
+                username: s.user.username,
+                email: s.user.email,
+                avatarUrl: null,
+              },
+              canEdit: s.canEdit,
+            }))}
           />
-        </main>
-      </div>
+          <SubmitTemplateButton
+            workshopId={id}
+            defaultTitle={workshop.title}
+            defaultDescription={workshop.description}
+          />
+          <VersionsTrigger workshopId={id} initialVersions={versions} />
+          <Link
+            href={`/sessions/${id}/overview`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
+            title="Workshop-Übersicht"
+          >
+            <BarChart3 className="size-4" />
+            Übersicht
+          </Link>
+          {workshop.status === "COMPLETED" ? (
+            <Link
+              href={`/sessions/${id}/debrief`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-[var(--neon-cyan)]/40 bg-[var(--neon-cyan)]/[0.08] px-3 py-1.5 text-sm font-medium text-[var(--neon-cyan)] hover:bg-[var(--neon-cyan)]/15"
+              title="Soll/Ist-Auswertung"
+            >
+              <ClipboardCheck className="size-4" />
+              Auswertung
+            </Link>
+          ) : null}
+          <Link
+            href={`/sessions/${id}/print`}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
+            title="Druckansicht / als PDF speichern"
+          >
+            <Printer className="size-4" />
+            Drucken
+          </Link>
+          {activeLive ? (
+            <Link
+              href={`/sessions/${id}/live/cockpit`}
+              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--neon-pink)]/15 px-3 py-1.5 text-sm font-medium text-[var(--neon-pink)] hover:bg-[var(--neon-pink)]/25"
+            >
+              <Radio className="size-4 animate-pulse" />
+              Live ist aktiv
+            </Link>
+          ) : (
+            <form action={startLiveSessionAction.bind(null, id)}>
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white shadow-[0_4px_20px_-6px_oklch(0.65_0.26_295/_0.5)] hover:opacity-95"
+              >
+                <PlayCircle className="size-4" />
+                Live starten
+              </Button>
+            </form>
+          )}
+          <UserMenu
+            user={{
+              name: sessionUser.name,
+              email: sessionUser.email,
+              role: sessionUser.role,
+            }}
+          />
+        </div>
+      </header>
+      <main className="flex-1 px-8 py-8">
+        <WorkshopEditor
+          workshop={workshop}
+          categories={categories}
+          users={users}
+          methods={methods}
+          workshopLinks={links}
+          currentUserId={sessionUser.id}
+          isAdmin={sessionUser.role === "ADMIN"}
+        />
+      </main>
+    </div>
+  );
+}
+
+function SessionContentSkeleton({ userName }: { userName: string }) {
+  return (
+    <div className="flex min-h-screen flex-1 flex-col">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/60 bg-background/70 px-8 backdrop-blur-xl">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Zurück zu Sessions
+        </Link>
+        <div className="text-xs text-muted-foreground">
+          Lade Session für {userName} …
+        </div>
+      </header>
+      <main className="flex-1 px-8 py-8">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <div className="h-10 w-2/3 animate-pulse rounded-lg bg-muted/30" />
+          <div className="h-4 w-1/3 animate-pulse rounded-lg bg-muted/20" />
+          <div className="h-24 animate-pulse rounded-2xl bg-muted/20" />
+          <div className="h-24 animate-pulse rounded-2xl bg-muted/20" />
+          <div className="space-y-2">
+            <div className="h-20 animate-pulse rounded-2xl bg-muted/20" />
+            <div className="h-20 animate-pulse rounded-2xl bg-muted/20" />
+            <div className="h-20 animate-pulse rounded-2xl bg-muted/20" />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

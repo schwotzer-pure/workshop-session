@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth/auth";
@@ -9,6 +9,14 @@ async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Not authenticated");
   return session.user;
+}
+
+function invalidateMaterialCaches(workshopId: string) {
+  revalidatePath(`/sessions/${workshopId}`);
+  // Workshop-level links card is cached per-workshop key.
+  revalidateTag("workshop-links", { expire: 0 });
+  // Workshop listings show no material info, so no need to invalidate
+  // "workshops" tag here.
 }
 
 const CreateMaterialSchema = z.object({
@@ -37,7 +45,7 @@ export async function createMaterialAction(
     },
   });
 
-  revalidatePath(`/sessions/${data.workshopId}`);
+  invalidateMaterialCaches(data.workshopId);
   return material;
 }
 
@@ -64,7 +72,7 @@ export async function updateMaterialAction(
     },
     select: { workshopId: true },
   });
-  revalidatePath(`/sessions/${material.workshopId}`);
+  invalidateMaterialCaches(material.workshopId);
 }
 
 export async function deleteMaterialAction(id: string) {
@@ -75,5 +83,5 @@ export async function deleteMaterialAction(id: string) {
   });
   if (!material) return;
   await prisma.material.delete({ where: { id } });
-  revalidatePath(`/sessions/${material.workshopId}`);
+  invalidateMaterialCaches(material.workshopId);
 }

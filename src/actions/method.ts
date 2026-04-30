@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth/auth";
@@ -19,6 +19,7 @@ async function requireAdmin() {
 }
 
 function revalidateMethods() {
+  revalidateTag("methods", { expire: 0 });
   revalidatePath("/dashboard/library");
   revalidatePath("/dashboard/admin/methods");
   revalidatePath("/dashboard/me/contributions");

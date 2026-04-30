@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth/auth";
@@ -31,6 +31,7 @@ export async function shareWorkshopAction(input: z.input<typeof ShareSchema>) {
       canEdit: data.canEdit,
     },
   });
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath(`/sessions/${data.workshopId}`);
 }
 
@@ -47,5 +48,6 @@ export async function unshareWorkshopAction(input: {
       },
     },
   });
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath(`/sessions/${input.workshopId}`);
 }

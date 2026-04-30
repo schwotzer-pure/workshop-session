@@ -12,10 +12,9 @@ import { recalcBlocks, totalDuration } from "@/lib/recalc";
  */
 export type WorkshopFilter = string;
 
-export async function listWorkshopsForUser(
+async function listWorkshopsForUserUncached(
   userId: string,
-  _organizationId: string | null,
-  filter: WorkshopFilter = "mine"
+  filter: WorkshopFilter
 ) {
   let where: Prisma.WorkshopWhereInput;
   if (filter === "archived") {
@@ -97,6 +96,25 @@ export async function listWorkshopsForUser(
   });
 }
 
+// Cached wrapper — invalidated by `revalidateTag("workshops")` in workshop &
+// share actions. 60s revalidate keeps stale data short for cross-user changes
+// (e.g. UNION-tab seeing someone else's new workshop) while still serving most
+// requests from cache.
+const cachedListWorkshopsForUser = unstable_cache(
+  async (userId: string, filter: WorkshopFilter) =>
+    listWorkshopsForUserUncached(userId, filter),
+  ["workshops:list"],
+  { revalidate: 60, tags: ["workshops"] }
+);
+
+export async function listWorkshopsForUser(
+  userId: string,
+  _organizationId: string | null,
+  filter: WorkshopFilter = "mine"
+) {
+  return cachedListWorkshopsForUser(userId, filter);
+}
+
 export async function getOrganizationsInUnion() {
   return prisma.organization.findMany({
     orderBy: [{ parentOrgId: "asc" }, { name: "asc" }],
@@ -119,25 +137,28 @@ export const getOrganization = unstable_cache(
   { revalidate: 600, tags: ["organizations"] }
 );
 
-export async function listMethods() {
-  return prisma.method.findMany({
-    where: { status: "APPROVED" },
-    orderBy: [{ category: "asc" }, { title: "asc" }],
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      defaultDuration: true,
-      category: true,
-      tags: true,
-      isPublic: true,
-      status: true,
-      createdAt: true,
-      approvedAt: true,
-      createdBy: { select: { id: true, name: true, username: true } },
-    },
-  });
-}
+export const listMethods = unstable_cache(
+  async () =>
+    prisma.method.findMany({
+      where: { status: "APPROVED" },
+      orderBy: [{ category: "asc" }, { title: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        defaultDuration: true,
+        category: true,
+        tags: true,
+        isPublic: true,
+        status: true,
+        createdAt: true,
+        approvedAt: true,
+        createdBy: { select: { id: true, name: true, username: true } },
+      },
+    }),
+  ["methods:approved"],
+  { revalidate: 300, tags: ["methods"] }
+);
 
 export type MethodListItem = Awaited<ReturnType<typeof listMethods>>[number];
 
@@ -241,6 +262,34 @@ export async function listWorkshopVersions(workshopId: string) {
 export type WorkshopVersionSummary = Awaited<
   ReturnType<typeof listWorkshopVersions>
 >[number];
+
+/**
+ * Lightweight workshop summary for fast hero/header rendering — no days,
+ * no blocks. Pair with `getWorkshopWithBlocks` in a separate Suspense for
+ * detail aggregations.
+ */
+export async function getWorkshopHeader(workshopId: string) {
+  return prisma.workshop.findUnique({
+    where: { id: workshopId },
+    select: {
+      id: true,
+      title: true,
+      goals: true,
+      description: true,
+      status: true,
+      clientName: true,
+      tags: true,
+      startDate: true,
+      timezone: true,
+      createdAt: true,
+      updatedAt: true,
+      organization: {
+        select: { id: true, name: true, slug: true, parentOrgId: true },
+      },
+      createdBy: { select: { id: true, name: true, username: true } },
+    },
+  });
+}
 
 export async function getWorkshopWithBlocks(workshopId: string) {
   return prisma.workshop.findUnique({
@@ -355,21 +404,26 @@ export async function getBlockDetails(blockId: string) {
 /**
  * Workshop-level link assets (materials with `url` set and no block attached).
  * Used by the workshop header to show Miro/Figma/etc. links for the whole
- * session.
+ * session. Cached per-workshop; invalidated by material actions via
+ * `revalidateTag("workshop-links:<id>")`.
  */
-export async function getWorkshopLinks(workshopId: string) {
-  const rows = await prisma.material.findMany({
-    where: { workshopId, blockId: null, url: { not: null } },
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, url: true, notes: true },
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    url: r.url ?? "",
-    notes: r.notes,
-  }));
-}
+export const getWorkshopLinks = unstable_cache(
+  async (workshopId: string) => {
+    const rows = await prisma.material.findMany({
+      where: { workshopId, blockId: null, url: { not: null } },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, url: true, notes: true },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      url: r.url ?? "",
+      notes: r.notes,
+    }));
+  },
+  ["workshop-links"],
+  { revalidate: 300, tags: ["workshop-links"] }
+);
 
 export async function getWorkshopMaterials(workshopId: string) {
   return prisma.material.findMany({

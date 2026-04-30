@@ -39,19 +39,20 @@ const STATUS_DOT: Record<string, string> = {
   ARCHIVED: "bg-muted-foreground/30",
 };
 
-function relativeTime(date: Date): string {
-  const ms = Date.now() - date.getTime();
+function relativeTime(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const ms = Date.now() - d.getTime();
   const min = Math.floor(ms / 60000);
   if (min < 1) return "gerade eben";
   if (min < 60) return `vor ${min} min`;
   const h = Math.floor(min / 60);
   if (h < 24) return `vor ${h}h`;
-  const d = Math.floor(h / 24);
-  if (d < 7) return `vor ${d} Tagen`;
-  return date.toLocaleDateString("de-CH");
+  const days = Math.floor(h / 24);
+  if (days < 7) return `vor ${days} Tagen`;
+  return d.toLocaleDateString("de-CH");
 }
 
-function formatDate(d: Date | null): string {
+function formatDate(d: Date | string | null): string {
   if (!d) return "Noch ohne Datum";
   return new Date(d).toLocaleDateString("de-CH", {
     day: "2-digit",

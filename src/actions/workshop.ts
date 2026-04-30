@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -40,6 +40,7 @@ export async function createWorkshopAction(formData: FormData) {
     include: { days: true },
   });
 
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
   redirect(`/sessions/${workshop.id}`);
 }
@@ -90,6 +91,7 @@ export async function updateWorkshopAction(input: z.input<typeof UpdateWorkshopS
   }
 
   revalidatePath(`/sessions/${data.id}`);
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
 }
 
@@ -113,12 +115,14 @@ export async function setWorkshopStatusAction(
   });
 
   revalidatePath(`/sessions/${data.id}`);
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
 }
 
 export async function deleteWorkshopAction(id: string) {
   await requireUser();
   await prisma.workshop.delete({ where: { id } });
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
   redirect("/dashboard");
 }
@@ -129,6 +133,7 @@ export async function archiveWorkshopAction(id: string) {
     where: { id },
     data: { status: "ARCHIVED" },
   });
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
   revalidatePath(`/sessions/${id}`);
 }
@@ -139,6 +144,7 @@ export async function unarchiveWorkshopAction(id: string) {
     where: { id },
     data: { status: "DRAFT" },
   });
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
   revalidatePath(`/sessions/${id}`);
 }
@@ -283,6 +289,7 @@ export async function duplicateWorkshopAction(sourceId: string) {
     });
   }
 
+  revalidateTag("workshops", { expire: 0 });
   revalidatePath("/dashboard");
   redirect(`/sessions/${newWorkshop.id}`);
 }

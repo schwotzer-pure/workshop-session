@@ -29,7 +29,7 @@ export default async function CockpitPage({
   const active = await getActiveLiveSessionForWorkshop(id);
   if (!active) {
     return (
-      <main className="aurora-bg-strong relative flex min-h-screen items-center justify-center p-8">
+      <main className="aurora-bg-strong relative flex min-h-screen items-center justify-center p-8" suppressHydrationWarning>
         <div className="glass-card max-w-md rounded-2xl p-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">{ws.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
