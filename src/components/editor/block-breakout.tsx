@@ -122,9 +122,9 @@ export function BlockBreakout({
         }
       />
 
-      <div className="ml-8 px-3 pb-3">
+      <div className="ml-3 px-2 pb-3 sm:ml-8 sm:px-3">
         <div
-          className="grid gap-3"
+          className="flex flex-col gap-3 md:grid"
           style={{
             gridTemplateColumns: `repeat(${columnIndices.length}, minmax(0, 1fr))`,
           }}
@@ -434,8 +434,8 @@ function BreakoutHeader({
         </span>
       </div>
 
-      <div className="min-w-0 flex-1 py-3 pr-3">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1 py-3 pr-2 sm:pr-3">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Columns3 className="size-4 shrink-0 text-[var(--neon-cyan)]" />
           {!readOnly ? (
             <CategoryPicker
@@ -466,7 +466,7 @@ function BreakoutHeader({
               }
             }}
             placeholder="Breakout-Titel (z.B. Diskussionsphase) …"
-            className="min-w-0 flex-1 bg-transparent text-base font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none"
+            className="min-w-0 flex-1 basis-40 bg-transparent text-base font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none"
           />
 
           <span className="shrink-0 rounded-lg border border-border/60 bg-background/60 px-2 py-1 text-sm font-medium tabular-nums text-muted-foreground">

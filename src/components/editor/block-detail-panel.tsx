@@ -153,7 +153,7 @@ export function BlockDetailPanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="!flex !h-[90vh] !w-[95vw] !max-w-[1400px] !flex-col !gap-0 !overflow-hidden !p-0 sm:!max-w-[1400px]"
+        className="!flex !h-[100vh] !w-[100vw] !max-w-none !flex-col !gap-0 !overflow-hidden !rounded-none !p-0 sm:!h-[90vh] sm:!w-[95vw] sm:!max-w-[1400px] sm:!rounded-2xl"
       >
         {/* Header */}
         <header className="flex items-start justify-between gap-4 border-b border-border/60 px-6 py-4">
@@ -279,7 +279,7 @@ export function BlockDetailPanel({
           </nav>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-3xl px-8 py-6">
+            <div className="mx-auto max-w-3xl px-4 py-4 sm:px-8 sm:py-6">
               {tab === "overview" ? (
                 <div className="space-y-5">
                   <Field label="Beschreibung">

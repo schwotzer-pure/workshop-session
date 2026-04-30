@@ -95,20 +95,20 @@ export default async function DashboardPage({
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Sessions</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Sessions</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Plane, gestalte und führe deine Workshops.
           </p>
         </div>
-        <form action={createWorkshopAction}>
+        <form action={createWorkshopAction} className="w-full sm:w-auto">
           <input type="hidden" name="title" value="" />
           <input type="hidden" name="startTime" value="09:00" />
           <Button
             type="submit"
             size="lg"
-            className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white shadow-[0_8px_30px_-8px_oklch(0.65_0.26_295/_0.5)] hover:opacity-95"
+            className="w-full bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white shadow-[0_8px_30px_-8px_oklch(0.65_0.26_295/_0.5)] hover:opacity-95 sm:w-auto"
           >
             <Plus className="size-4" />
             Neue Session
@@ -130,7 +130,7 @@ export default async function DashboardPage({
           {workshops.map((s) => (
             <div
               key={s.id}
-              className="group glass-card relative overflow-hidden rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_oklch(0.65_0.26_295/_0.25)]"
+              className="group glass-card relative overflow-hidden rounded-2xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_oklch(0.65_0.26_295/_0.25)] sm:p-6"
             >
               <Link
                 href={`/sessions/${s.id}`}

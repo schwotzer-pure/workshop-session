@@ -150,15 +150,15 @@ export function MethodLibrary({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Methoden</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Methoden</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Wiederverwendbare Workshop-Bausteine. Filtere nach Kategorie oder
             Dauer.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex w-full items-center justify-between gap-3 sm:w-auto">
           <div className="text-xs text-muted-foreground tabular-nums">
             {sorted.length} von {methods.length}
           </div>

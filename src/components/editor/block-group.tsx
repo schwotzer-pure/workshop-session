@@ -121,7 +121,7 @@ export function BlockGroup({
         }
       />
 
-      <div className="ml-8 space-y-0.5 border-l border-[var(--neon-violet)]/15 px-3 pb-3">
+      <div className="ml-3 space-y-0.5 border-l border-[var(--neon-violet)]/15 px-2 pb-3 sm:ml-8 sm:px-3">
         <SortableContext items={childIds} strategy={verticalListSortingStrategy}>
           {children
             .sort((a, b) => a.position - b.position)
@@ -291,8 +291,8 @@ function GroupHeader({
         </span>
       </div>
 
-      <div className="min-w-0 flex-1 py-3 pr-3">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1 py-3 pr-2 sm:pr-3">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Layers className="size-4 shrink-0 text-[var(--neon-violet)]" />
           {!readOnly ? (
             <CategoryPicker
@@ -323,7 +323,7 @@ function GroupHeader({
               }
             }}
             placeholder="Gruppen-Titel (z.B. Phase 1) …"
-            className="min-w-0 flex-1 bg-transparent text-base font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none"
+            className="min-w-0 flex-1 basis-40 bg-transparent text-base font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none"
           />
 
           <span className="shrink-0 rounded-lg border border-border/60 bg-background/60 px-2 py-1 text-sm font-medium tabular-nums text-muted-foreground">

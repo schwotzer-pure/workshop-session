@@ -367,8 +367,8 @@ function BlockCardBody({
         </span>
       </div>
 
-      <div className={cn("min-w-0 flex-1 pr-3", isCompact ? "py-2" : "py-3")}>
-        <div className="flex items-center gap-2">
+      <div className={cn("min-w-0 flex-1 pr-2 sm:pr-3", isCompact ? "py-2" : "py-3")}>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {!readOnly ? (
             <CategoryPicker
               categories={ctx.categories}
@@ -416,7 +416,7 @@ function BlockCardBody({
               }
             }}
             placeholder="Titel des Blocks …"
-            className="min-w-0 flex-1 bg-transparent text-base font-medium outline-none placeholder:text-muted-foreground/40 focus:outline-none"
+            className="min-w-0 flex-1 basis-40 bg-transparent text-base font-medium outline-none placeholder:text-muted-foreground/40 focus:outline-none"
           />
 
           <BlockIndicators block={block} ctx={ctx} readOnly={readOnly} />

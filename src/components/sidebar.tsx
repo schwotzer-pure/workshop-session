@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,9 +11,12 @@ import {
   Settings,
   Building2,
   ShieldCheck,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UnionLogo } from "@/components/union-logo";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const NAV: Array<{
   href: string;
@@ -28,26 +32,31 @@ const NAV: Array<{
   { href: "/dashboard/settings", label: "Einstellungen", icon: Settings, adminOnly: true },
 ];
 
-export function Sidebar({
+type SidebarUser = {
+  name: string;
+  username: string;
+  role: string;
+  organizationName?: string | null;
+};
+
+function SidebarBody({
   user,
+  onItemClick,
 }: {
-  user: {
-    name: string;
-    username: string;
-    role: string;
-    organizationName?: string | null;
-  };
+  user: SidebarUser;
+  onItemClick?: () => void;
 }) {
   const pathname = usePathname();
   const items = NAV.filter((i) => !i.adminOnly || user.role === "ADMIN");
 
   return (
-    <aside
-      className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar/70 backdrop-blur-xl"
-      suppressHydrationWarning
-    >
+    <>
       <div className="flex h-16 items-center border-b border-border/60 px-6">
-        <Link href="/dashboard" className="flex flex-col leading-none">
+        <Link
+          href="/dashboard"
+          className="flex flex-col leading-none"
+          onClick={onItemClick}
+        >
           <span className="neon-text text-lg font-semibold tracking-tight">
             MySession
           </span>
@@ -71,6 +80,7 @@ export function Sidebar({
             <Link
               key={item.href}
               href={item.href}
+              onClick={onItemClick}
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 active
@@ -102,6 +112,44 @@ export function Sidebar({
           </p>
         ) : null}
       </div>
+    </>
+  );
+}
+
+export function Sidebar({ user }: { user: SidebarUser }) {
+  return (
+    <aside
+      className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar/70 backdrop-blur-xl md:flex"
+      suppressHydrationWarning
+    >
+      <SidebarBody user={user} />
     </aside>
+  );
+}
+
+export function MobileSidebarTrigger({ user }: { user: SidebarUser }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="md:hidden"
+            aria-label="Menü öffnen"
+          />
+        }
+      >
+        <Menu className="size-5" />
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="flex w-72 flex-col bg-sidebar/95 p-0 backdrop-blur-xl"
+        showCloseButton={false}
+      >
+        <SidebarBody user={user} onItemClick={() => setOpen(false)} />
+      </SheetContent>
+    </Sheet>
   );
 }

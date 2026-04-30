@@ -157,9 +157,9 @@ export function TemplatesView({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end sm:gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Vorlagen</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Vorlagen</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Wiederverwendbare Workshops aus dem Trainer-Team. Filtere nach
             Thema, Dauer oder Bewertung.

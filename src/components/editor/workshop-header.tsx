@@ -86,7 +86,7 @@ export function WorkshopHeader({
             }
           }}
           placeholder="Session-Titel …"
-          className="w-full bg-transparent text-4xl font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none"
+          className="w-full bg-transparent text-2xl font-semibold tracking-tight outline-none placeholder:text-muted-foreground/40 focus:outline-none sm:text-3xl lg:text-4xl"
         />
         <input
           type="text"
@@ -161,7 +161,7 @@ export function WorkshopHeader({
         </label>
       </div>
 
-      <div className="glass-card flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl p-4">
+      <div className="glass-card flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl p-3 sm:gap-x-8 sm:p-4">
         <label className="flex items-center gap-2 text-sm">
           <CalendarDays className="size-4 text-muted-foreground" />
           <Input
