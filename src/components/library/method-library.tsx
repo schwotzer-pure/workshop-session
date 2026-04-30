@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import {
   Check,
@@ -13,7 +14,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { deleteMethodAction } from "@/actions/method";
+import {
+  createSessionFromMethodAction,
+  deleteMethodAction,
+} from "@/actions/method";
 import {
   METHOD_CATEGORIES,
   getMethodCategoryAccent,
@@ -358,6 +362,7 @@ function MethodCard({
   method: MethodListItem;
   isAdmin: boolean;
 }) {
+  const router = useRouter();
   const [, startTransition] = useTransition();
   const cat = method.category ?? "Sonstige";
   const accent = getMethodCategoryAccent(cat);
@@ -371,6 +376,18 @@ function MethodCard({
         toast.success("Methode gelöscht");
       } catch (e) {
         toast.error("Konnte Methode nicht löschen");
+        console.error(e);
+      }
+    });
+  };
+
+  const handleUse = () => {
+    startTransition(async () => {
+      try {
+        const id = await createSessionFromMethodAction(method.id);
+        router.push(`/sessions/${id}`);
+      } catch (e) {
+        toast.error("Konnte Session nicht erstellen");
         console.error(e);
       }
     });
@@ -439,11 +456,19 @@ function MethodCard({
         </div>
       ) : null}
 
-      {method.createdBy?.name ? (
-        <div className="mt-auto border-t border-border/60 pt-3 text-xs text-muted-foreground">
-          von {method.createdBy.name}
-        </div>
-      ) : null}
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+        <span className="truncate">
+          {method.createdBy?.name ? `von ${method.createdBy.name}` : ""}
+        </span>
+        <button
+          type="button"
+          onClick={handleUse}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-1 text-xs font-medium text-white hover:opacity-95"
+        >
+          <Sparkles className="size-3" />
+          Session mit Methode erstellen
+        </button>
+      </div>
     </article>
   );
 }

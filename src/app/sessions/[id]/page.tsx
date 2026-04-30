@@ -30,6 +30,7 @@ import { LibrarySidebarTrigger } from "@/components/editor/library-sidebar";
 import { SubmitTemplateButton } from "@/components/editor/submit-template-dialog";
 import { ShareWorkshopButton } from "@/components/editor/share-dialog";
 import { PrintMenu } from "@/components/editor/print-menu";
+import { MethodDraftHeaderActions } from "@/components/editor/method-draft-header-actions";
 
 export default async function SessionDetailPage({
   params,
@@ -110,12 +111,35 @@ async function SessionContent({
     <div className="flex min-h-screen flex-1 flex-col">
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-border/60 bg-background/70 px-8 backdrop-blur-xl">
         <Link
-          href="/dashboard"
+          href={workshop.isMethodDraft ? "/dashboard/library" : "/dashboard"}
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Zurück zu Sessions
+          {workshop.isMethodDraft ? "Zurück zu Methoden" : "Zurück zu Sessions"}
         </Link>
+        {workshop.isMethodDraft ? (
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs font-medium uppercase tracking-wider text-[var(--neon-violet)] sm:inline">
+              Methoden-Entwurf
+            </span>
+            {dayId ? (
+              <LibrarySidebarTrigger methods={methods} dayId={dayId} />
+            ) : null}
+            <MethodDraftHeaderActions
+              workshopId={id}
+              defaultTitle={workshop.title}
+              defaultDescription={workshop.description}
+              defaultTags={workshop.tags}
+            />
+            <UserMenu
+              user={{
+                name: sessionUser.name,
+                email: sessionUser.email,
+                role: sessionUser.role,
+              }}
+            />
+          </div>
+        ) : (
         <div className="flex items-center gap-3">
           {dayId ? (
             <LibrarySidebarTrigger methods={methods} dayId={dayId} />
@@ -189,6 +213,7 @@ async function SessionContent({
             }}
           />
         </div>
+        )}
       </header>
       <main className="flex-1 px-8 py-8">
         <WorkshopEditor

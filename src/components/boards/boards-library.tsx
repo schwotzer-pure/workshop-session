@@ -32,6 +32,7 @@ import { EditBoardDialog } from "./edit-board-dialog";
 import type { BoardListItem } from "@/lib/queries";
 
 type Sort = "default" | "newest" | "most-used" | "alphabetical";
+type Activity = "all" | "unused" | "few" | "many";
 
 const KIND_FILTERS: Array<{ value: LinkKind; label: string }> = [
   { value: "miro", label: "Miro" },
@@ -52,6 +53,17 @@ const SORTS: Array<{ value: Sort; label: string }> = [
   { value: "alphabetical", label: "A–Z" },
 ];
 
+const ACTIVITY_BUCKETS: Array<{
+  value: Activity;
+  label: string;
+  match: (count: number) => boolean;
+}> = [
+  { value: "all", label: "Alle", match: () => true },
+  { value: "unused", label: "Noch nicht verwendet", match: (n) => n === 0 },
+  { value: "few", label: "1–2 Sessions", match: (n) => n >= 1 && n <= 2 },
+  { value: "many", label: "3+ Sessions", match: (n) => n >= 3 },
+];
+
 export function BoardsLibrary({
   boards,
   currentUserId,
@@ -63,16 +75,54 @@ export function BoardsLibrary({
 }) {
   const [search, setSearch] = useState("");
   const [selectedKinds, setSelectedKinds] = useState<LinkKind[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedCreators, setSelectedCreators] = useState<string[]>([]);
+  const [activity, setActivity] = useState<Activity>("all");
   const [masterOnly, setMasterOnly] = useState(false);
   const [sort, setSort] = useState<Sort>("default");
   const [editing, setEditing] = useState<BoardListItem | null>(null);
 
+  // ── Aggregated filter options derived from current boards list ──
+  const allTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const b of boards) {
+      for (const t of b.tags) counts.set(t, (counts.get(t) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([tag, count]) => ({ tag, count }));
+  }, [boards]);
+
+  const allCreators = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; count: number }>();
+    for (const b of boards) {
+      const c = b.createdBy;
+      if (!c) continue;
+      const existing = map.get(c.id);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        map.set(c.id, { id: c.id, name: c.name, count: 1 });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [boards]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const bucket = ACTIVITY_BUCKETS.find((a) => a.value === activity)!;
     return boards.filter((b) => {
       const kind = detectLinkKind(b.url).kind;
       if (selectedKinds.length > 0 && !selectedKinds.includes(kind))
         return false;
+      if (selectedTags.length > 0 && !selectedTags.some((t) => b.tags.includes(t)))
+        return false;
+      if (
+        selectedCreators.length > 0 &&
+        (!b.createdBy || !selectedCreators.includes(b.createdBy.id))
+      )
+        return false;
+      if (!bucket.match(b.workshops.length)) return false;
       if (masterOnly && !b.isMaster) return false;
       if (q) {
         const haystack = [
@@ -89,7 +139,15 @@ export function BoardsLibrary({
       }
       return true;
     });
-  }, [boards, search, selectedKinds, masterOnly]);
+  }, [
+    boards,
+    search,
+    selectedKinds,
+    selectedTags,
+    selectedCreators,
+    activity,
+    masterOnly,
+  ]);
 
   const sorted = useMemo(() => {
     const list = [...filtered];
@@ -116,9 +174,24 @@ export function BoardsLibrary({
     );
   };
 
+  const toggleTag = (t: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]
+    );
+  };
+
+  const toggleCreator = (id: string) => {
+    setSelectedCreators((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   const clearFilters = () => {
     setSearch("");
     setSelectedKinds([]);
+    setSelectedTags([]);
+    setSelectedCreators([]);
+    setActivity("all");
     setMasterOnly(false);
     setSort("default");
   };
@@ -126,6 +199,9 @@ export function BoardsLibrary({
   const anyActive =
     search.trim().length > 0 ||
     selectedKinds.length > 0 ||
+    selectedTags.length > 0 ||
+    selectedCreators.length > 0 ||
+    activity !== "all" ||
     masterOnly ||
     sort !== "default";
 
@@ -214,24 +290,113 @@ export function BoardsLibrary({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setMasterOnly(!masterOnly)}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-            masterOnly
-              ? "bg-[var(--neon-violet)]/15 text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.4)]"
-              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
-          )}
-        >
-          <Star
+        {allTags.length > 0 ? (
+          <div>
+            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80">
+              Thema (Tags)
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {allTags.map(({ tag, count }) => {
+                const active = selectedTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => toggleTag(tag)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all",
+                      active
+                        ? "border-[var(--neon-violet)] bg-[var(--neon-violet)]/15 font-semibold text-foreground"
+                        : "border-border/60 font-medium text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {active ? <Check className="size-3" /> : null}
+                    {tag}
+                    <span className="text-[10px] tabular-nums text-muted-foreground/70">
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+          <div>
+            <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80">
+              Aktivität
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {ACTIVITY_BUCKETS.map((a) => (
+                <button
+                  key={a.value}
+                  type="button"
+                  onClick={() => setActivity(a.value)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+                    activity === a.value
+                      ? "bg-foreground/10 text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.25)]"
+                      : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                  )}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {allCreators.length > 1 ? (
+            <div>
+              <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                Trainer:in
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {allCreators.map((c) => {
+                  const active = selectedCreators.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCreator(c.id)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-all",
+                        active
+                          ? "border-[var(--neon-violet)] bg-[var(--neon-violet)]/15 font-semibold text-foreground"
+                          : "border-border/60 font-medium text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {active ? <Check className="size-3" /> : null}
+                      {c.name}
+                      <span className="text-[10px] tabular-nums text-muted-foreground/70">
+                        {c.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setMasterOnly(!masterOnly)}
             className={cn(
-              "size-3.5",
-              masterOnly && "fill-[var(--neon-violet)] text-[var(--neon-violet)]"
+              "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
+              masterOnly
+                ? "bg-[var(--neon-violet)]/15 text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.4)]"
+                : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
             )}
-          />
-          Nur Master-Boards
-        </button>
+          >
+            <Star
+              className={cn(
+                "size-3.5",
+                masterOnly && "fill-[var(--neon-violet)] text-[var(--neon-violet)]"
+              )}
+            />
+            Nur Master-Boards
+          </button>
+        </div>
       </div>
 
       {sorted.length === 0 ? (

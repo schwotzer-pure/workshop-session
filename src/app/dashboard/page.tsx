@@ -103,7 +103,7 @@ export default async function DashboardPage({
           </p>
         </div>
         <form action={createWorkshopAction}>
-          <input type="hidden" name="title" value="Neue Session" />
+          <input type="hidden" name="title" value="" />
           <input type="hidden" name="startTime" value="09:00" />
           <Button
             type="submit"
@@ -160,7 +160,11 @@ export default async function DashboardPage({
 
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold leading-tight tracking-tight">
-                    {s.title}
+                    {s.title || (
+                      <span className="text-muted-foreground/50">
+                        Ohne Titel
+                      </span>
+                    )}
                   </h3>
                   {s.clientName ? (
                     <p className="text-sm text-muted-foreground">{s.clientName}</p>
@@ -210,7 +214,7 @@ export default async function DashboardPage({
 
           {filter === "mine" ? (
             <form action={createWorkshopAction}>
-              <input type="hidden" name="title" value="Neue Session" />
+              <input type="hidden" name="title" value="" />
               <input type="hidden" name="startTime" value="09:00" />
               <button
                 type="submit"
@@ -320,7 +324,7 @@ function EmptyState({ filter }: { filter: WorkshopFilter }) {
       </p>
       {filter !== "archived" ? (
         <form action={createWorkshopAction} className="mt-6">
-          <input type="hidden" name="title" value="Neue Session" />
+          <input type="hidden" name="title" value="" />
           <input type="hidden" name="startTime" value="09:00" />
           <Button
             type="submit"

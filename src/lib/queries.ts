@@ -18,7 +18,7 @@ async function listWorkshopsForUserUncached(
 ) {
   let where: Prisma.WorkshopWhereInput;
   if (filter === "archived") {
-    where = { status: "ARCHIVED" };
+    where = { status: "ARCHIVED", isMethodDraft: false };
   } else if (filter === "mine") {
     where = {
       AND: [
@@ -29,13 +29,18 @@ async function listWorkshopsForUserUncached(
           ],
         },
         { NOT: { status: "ARCHIVED" } },
+        { isMethodDraft: false },
       ],
     };
   } else if (filter === "all") {
-    where = { NOT: { status: "ARCHIVED" } };
+    where = { NOT: { status: "ARCHIVED" }, isMethodDraft: false };
   } else {
     // Treat any other value as an organizationId
-    where = { organizationId: filter, NOT: { status: "ARCHIVED" } };
+    where = {
+      organizationId: filter,
+      NOT: { status: "ARCHIVED" },
+      isMethodDraft: false,
+    };
   }
 
   const workshops = await prisma.workshop.findMany({

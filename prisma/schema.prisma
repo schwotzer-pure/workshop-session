@@ -115,6 +115,9 @@ model Workshop {
   tags        String[]       @default([])
   startDate   DateTime?
   timezone    String         @default("Europe/Zurich")
+  /// True for sandbox workshops used as Method-Editor backing. Filtered out
+  /// of all session listings; saved-as-method or discarded explicitly.
+  isMethodDraft Boolean       @default(false)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 

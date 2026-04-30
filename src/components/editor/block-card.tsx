@@ -298,6 +298,7 @@ function BlockCardBody({
             <textarea
               value={titleValue}
               readOnly={readOnly}
+              autoFocus={!block.title && !readOnly}
               onChange={(e) => {
                 setTitleValue(e.target.value);
                 ctx.onLocalUpdate(block.id, { title: e.target.value });
@@ -401,6 +402,7 @@ function BlockCardBody({
             type="text"
             value={titleValue}
             readOnly={readOnly}
+            autoFocus={!block.title && !readOnly}
             onChange={(e) => {
               setTitleValue(e.target.value);
               ctx.onLocalUpdate(block.id, { title: e.target.value });

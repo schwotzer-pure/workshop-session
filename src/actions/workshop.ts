@@ -13,14 +13,14 @@ async function requireUser() {
 }
 
 const CreateWorkshopSchema = z.object({
-  title: z.string().trim().min(1).default("Neue Session"),
+  title: z.string().default(""),
   startTime: z.string().regex(/^([01]?\d|2[0-3]):[0-5]\d$/).default("09:00"),
 });
 
 export async function createWorkshopAction(formData: FormData) {
   const user = await requireUser();
   const parsed = CreateWorkshopSchema.parse({
-    title: formData.get("title") || "Neue Session",
+    title: formData.get("title") ?? "",
     startTime: formData.get("startTime") || "09:00",
   });
 

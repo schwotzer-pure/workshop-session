@@ -76,6 +76,7 @@ export function WorkshopHeader({
         <input
           type="text"
           value={titleValue}
+          autoFocus={!title}
           onChange={(e) => setTitleValue(e.target.value)}
           onBlur={() => {
             if (titleValue.trim() && titleValue !== title) {
