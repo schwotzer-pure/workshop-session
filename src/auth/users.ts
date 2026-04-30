@@ -40,6 +40,15 @@ export const DUMMY_USERS: AppUser[] = [
     role: "TRAINER",
     organizationId: "org_gold",
   },
+  {
+    id: "user_marco",
+    username: "marco",
+    password: "neustadt",
+    name: "Marco",
+    email: "marco@neustadt.swiss",
+    role: "TRAINER",
+    organizationId: "org_neustadt",
+  },
 ];
 
 export function findUserByCredentials(username: string, password: string): AppUser | null {
