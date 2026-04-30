@@ -42,7 +42,10 @@ export function Sidebar({
   const items = NAV.filter((i) => !i.adminOnly || user.role === "ADMIN");
 
   return (
-    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar/70 backdrop-blur-xl">
+    <aside
+      className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar/70 backdrop-blur-xl"
+      suppressHydrationWarning
+    >
       <div className="flex h-16 items-center border-b border-border/60 px-6">
         <Link href="/dashboard" className="flex flex-col leading-none">
           <span className="neon-text text-lg font-semibold tracking-tight">
