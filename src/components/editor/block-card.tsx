@@ -207,8 +207,11 @@ function BlockCardBody({
 }) {
   const [, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(block.title);
+  const lastSavedTitle = useRef(block.title);
   const [descValue, setDescValue] = useState(block.description ?? "");
+  const lastSavedDesc = useRef(block.description ?? "");
   const [notesValue, setNotesValue] = useState(block.notes ?? "");
+  const lastSavedNotes = useRef(block.notes ?? "");
   const [duration, setDuration] = useState(block.duration);
   const [showDesc, setShowDesc] = useState(Boolean(block.description));
   const [showNotes, setShowNotes] = useState(Boolean(block.notes));
@@ -300,7 +303,8 @@ function BlockCardBody({
                 ctx.onLocalUpdate(block.id, { title: e.target.value });
               }}
               onBlur={() => {
-                if (titleValue !== block.title) {
+                if (titleValue !== lastSavedTitle.current) {
+                  lastSavedTitle.current = titleValue;
                   persist(() =>
                     updateBlockAction({ id: block.id, title: titleValue })
                   );
@@ -402,7 +406,8 @@ function BlockCardBody({
               ctx.onLocalUpdate(block.id, { title: e.target.value });
             }}
             onBlur={() => {
-              if (titleValue !== block.title) {
+              if (titleValue !== lastSavedTitle.current) {
+                lastSavedTitle.current = titleValue;
                 persist(() =>
                   updateBlockAction({ id: block.id, title: titleValue })
                 );
@@ -458,11 +463,13 @@ function BlockCardBody({
             readOnly={readOnly}
             onChange={(e) => setDescValue(e.target.value)}
             onBlur={() => {
-              if (descValue !== (block.description ?? "")) {
+              const trimmed = descValue.trim();
+              if (trimmed !== lastSavedDesc.current.trim()) {
+                lastSavedDesc.current = descValue;
                 persist(() =>
                   updateBlockAction({
                     id: block.id,
-                    description: descValue.trim() || null,
+                    description: trimmed || null,
                   })
                 );
               }
@@ -493,11 +500,13 @@ function BlockCardBody({
               readOnly={readOnly}
               onChange={(e) => setNotesValue(e.target.value)}
               onBlur={() => {
-                if (notesValue !== (block.notes ?? "")) {
+                const trimmed = notesValue.trim();
+                if (trimmed !== lastSavedNotes.current.trim()) {
+                  lastSavedNotes.current = notesValue;
                   persist(() =>
                     updateBlockAction({
                       id: block.id,
-                      notes: notesValue.trim() || null,
+                      notes: trimmed || null,
                     })
                   );
                 }

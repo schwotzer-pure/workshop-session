@@ -17,6 +17,7 @@ const CreateMaterialSchema = z.object({
   name: z.string().trim().min(1).max(120),
   quantity: z.number().int().min(1).max(9999).nullable().optional(),
   notes: z.string().nullable().optional(),
+  url: z.string().trim().url().max(2000).nullable().optional(),
 });
 
 export async function createMaterialAction(
@@ -32,6 +33,7 @@ export async function createMaterialAction(
       name: data.name,
       quantity: data.quantity ?? null,
       notes: data.notes ?? null,
+      url: data.url ?? null,
     },
   });
 
@@ -44,6 +46,7 @@ const UpdateMaterialSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   quantity: z.number().int().min(1).max(9999).nullable().optional(),
   notes: z.string().nullable().optional(),
+  url: z.string().trim().url().max(2000).nullable().optional(),
 });
 
 export async function updateMaterialAction(
@@ -57,6 +60,7 @@ export async function updateMaterialAction(
       name: data.name,
       quantity: data.quantity,
       notes: data.notes,
+      url: data.url,
     },
     select: { workshopId: true },
   });

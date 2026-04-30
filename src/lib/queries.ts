@@ -3,17 +3,22 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { recalcBlocks, totalDuration } from "@/lib/recalc";
 
-export type WorkshopFilter = "mine" | "myOrg" | "all" | "archived";
+/**
+ * Filter values:
+ *  - "mine"     — workshops the user created or that are shared with them
+ *  - "all"      — every active (non-archived) workshop in the UNION
+ *  - "archived" — archived workshops only
+ *  - any other string is treated as an organizationId
+ */
+export type WorkshopFilter = string;
 
 export async function listWorkshopsForUser(
   userId: string,
-  organizationId: string | null,
-  filter: WorkshopFilter = "all"
+  _organizationId: string | null,
+  filter: WorkshopFilter = "mine"
 ) {
-  let where: Prisma.WorkshopWhereInput = {};
-
+  let where: Prisma.WorkshopWhereInput;
   if (filter === "archived") {
-    // Archived ones across the whole UNION — quasi a recycle-bin / cold storage.
     where = { status: "ARCHIVED" };
   } else if (filter === "mine") {
     where = {
@@ -27,18 +32,20 @@ export async function listWorkshopsForUser(
         { NOT: { status: "ARCHIVED" } },
       ],
     };
-  } else if (filter === "myOrg" && organizationId) {
-    where = { organizationId, NOT: { status: "ARCHIVED" } };
-  } else {
-    // "all" → exclude archived
+  } else if (filter === "all") {
     where = { NOT: { status: "ARCHIVED" } };
+  } else {
+    // Treat any other value as an organizationId
+    where = { organizationId: filter, NOT: { status: "ARCHIVED" } };
   }
 
   const workshops = await prisma.workshop.findMany({
     where,
     orderBy: { updatedAt: "desc" },
     include: {
-      organization: { select: { id: true, name: true, slug: true } },
+      organization: {
+        select: { id: true, name: true, slug: true, parentOrgId: true },
+      },
       createdBy: { select: { id: true, name: true, username: true } },
       days: {
         orderBy: { position: "asc" },
@@ -112,25 +119,65 @@ export const getOrganization = unstable_cache(
   { revalidate: 600, tags: ["organizations"] }
 );
 
-export const listMethods = unstable_cache(
-  async () =>
-    prisma.method.findMany({
-      orderBy: [{ category: "asc" }, { title: "asc" }],
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        defaultDuration: true,
-        category: true,
-        tags: true,
-        isPublic: true,
-      },
-    }),
-  ["methods:all"],
-  { revalidate: 300, tags: ["methods"] }
-);
+export async function listMethods() {
+  return prisma.method.findMany({
+    where: { status: "APPROVED" },
+    orderBy: [{ category: "asc" }, { title: "asc" }],
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      defaultDuration: true,
+      category: true,
+      tags: true,
+      isPublic: true,
+      status: true,
+      createdAt: true,
+      approvedAt: true,
+      createdBy: { select: { id: true, name: true, username: true } },
+    },
+  });
+}
 
 export type MethodListItem = Awaited<ReturnType<typeof listMethods>>[number];
+
+export async function listMethodsForUser(
+  userId: string,
+  filter: "approved" | "mine" | "pending" = "approved"
+) {
+  const where =
+    filter === "approved"
+      ? { status: "APPROVED" as const }
+      : filter === "mine"
+      ? { createdById: userId }
+      : { status: "PENDING" as const };
+
+  return prisma.method.findMany({
+    where,
+    orderBy:
+      filter === "approved"
+        ? [{ category: "asc" }, { title: "asc" }]
+        : { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      defaultDuration: true,
+      category: true,
+      tags: true,
+      isPublic: true,
+      status: true,
+      rejectedReason: true,
+      createdAt: true,
+      approvedAt: true,
+      createdBy: { select: { id: true, name: true, username: true } },
+    },
+  });
+}
+
+export type MethodListItemForUser = Awaited<
+  ReturnType<typeof listMethodsForUser>
+>[number];
 
 export async function listTemplatesForUser(
   userId: string,
@@ -199,6 +246,9 @@ export async function getWorkshopWithBlocks(workshopId: string) {
   return prisma.workshop.findUnique({
     where: { id: workshopId },
     include: {
+      organization: {
+        select: { id: true, name: true, slug: true, parentOrgId: true },
+      },
       createdBy: {
         select: { id: true, name: true, username: true },
       },
@@ -226,7 +276,7 @@ export async function getWorkshopWithBlocks(workshopId: string) {
                 },
               },
               method: {
-                select: { id: true, title: true },
+                select: { id: true, title: true, category: true },
               },
               tasks: {
                 orderBy: { position: "asc" },
@@ -300,6 +350,25 @@ export async function getBlockDetails(blockId: string) {
       },
     },
   });
+}
+
+/**
+ * Workshop-level link assets (materials with `url` set and no block attached).
+ * Used by the workshop header to show Miro/Figma/etc. links for the whole
+ * session.
+ */
+export async function getWorkshopLinks(workshopId: string) {
+  const rows = await prisma.material.findMany({
+    where: { workshopId, blockId: null, url: { not: null } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, url: true, notes: true },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    url: r.url ?? "",
+    notes: r.notes,
+  }));
 }
 
 export async function getWorkshopMaterials(workshopId: string) {

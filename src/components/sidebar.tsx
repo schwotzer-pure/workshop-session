@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutGrid,
   CalendarDays,
   LibraryBig,
   LayoutTemplate,
   Settings,
-  PlayCircle,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { UnionLogo } from "@/components/union-logo";
 
 const NAV: Array<{
   href: string;
@@ -22,7 +22,7 @@ const NAV: Array<{
   { href: "/dashboard", label: "Sessions", icon: CalendarDays },
   { href: "/dashboard/templates", label: "Vorlagen", icon: LayoutTemplate },
   { href: "/dashboard/library", label: "Methoden", icon: LibraryBig },
-  { href: "/dashboard/live", label: "Live", icon: PlayCircle },
+  { href: "/dashboard/admin/templates", label: "Verwaltung", icon: ShieldCheck, adminOnly: true },
   { href: "/dashboard/settings", label: "Einstellungen", icon: Settings, adminOnly: true },
 ];
 
@@ -41,12 +41,18 @@ export function Sidebar({
 
   return (
     <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border/60 bg-sidebar/70 backdrop-blur-xl">
-      <div className="flex h-16 items-center gap-2 border-b border-border/60 px-6">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] shadow-[0_4px_20px_-4px_oklch(0.65_0.26_295/_0.4)]">
-          <LayoutGrid className="size-4 text-white" />
-        </div>
-        <Link href="/dashboard" className="text-lg font-semibold tracking-tight">
-          <span className="neon-text">MySession</span>
+      <div className="flex h-16 items-center border-b border-border/60 px-6">
+        <Link href="/dashboard" className="flex flex-col leading-none">
+          <span className="neon-text text-lg font-semibold tracking-tight">
+            MySession
+          </span>
+          <span className="mt-1 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+            by
+            <UnionLogo
+              aria-label="UNION"
+              className="h-2.5 w-auto text-foreground/80"
+            />
+          </span>
         </Link>
       </div>
 

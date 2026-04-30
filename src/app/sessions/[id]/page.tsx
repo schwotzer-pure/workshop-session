@@ -7,6 +7,7 @@ import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 import {
   getWorkshopWithBlocks,
+  getWorkshopLinks,
   getCategoriesForUser,
   listAllUsers,
   getOrganization,
@@ -30,7 +31,7 @@ export default async function SessionDetailPage({
   if (!session?.user?.id) redirect("/login");
 
   const { id } = await params;
-  const [workshop, categories, users, activeLive, userOrg, versions, methods] =
+  const [workshop, categories, users, activeLive, userOrg, versions, methods, links] =
     await Promise.all([
       getWorkshopWithBlocks(id),
       getCategoriesForUser(session.user.id),
@@ -41,6 +42,7 @@ export default async function SessionDetailPage({
         : Promise.resolve(null),
       listWorkshopVersions(id),
       listMethods(),
+      getWorkshopLinks(id),
     ]);
   if (!workshop) notFound();
   const dayId = workshop.days[0]?.id ?? "";
@@ -151,6 +153,7 @@ export default async function SessionDetailPage({
             categories={categories}
             users={users}
             methods={methods}
+            workshopLinks={links}
             currentUserId={session.user.id}
             isAdmin={session.user.role === "ADMIN"}
           />

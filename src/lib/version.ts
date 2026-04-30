@@ -30,7 +30,15 @@ export type WorkshopSnapshot = {
   }>;
 };
 
-type SnapshotBlock = {
+/**
+ * Method snapshot — block hierarchy without the workshop/day wrapper.
+ * Re-uses SnapshotBlock so the same restore logic applies (parentOrigId map).
+ */
+export type MethodSnapshot = {
+  blocks: Array<SnapshotBlock>;
+};
+
+export type SnapshotBlock = {
   /** Original ID — used to remap parentBlockId references during restore. */
   origId: string;
   position: number;

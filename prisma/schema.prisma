@@ -74,7 +74,8 @@ model User {
   createdTemplates  Template[]        @relation("TemplateCreator")
   approvedTemplates Template[]        @relation("TemplateApprover")
   templateRatings   TemplateRating[]
-  methods           Method[]
+  createdMethods    Method[]          @relation("MethodCreator")
+  approvedMethods   Method[]          @relation("MethodApprover")
   comments          Comment[]
   liveControllers   LiveSession[]     @relation("LiveController")
   coachNotes        CoachNote[]       @relation("CoachNoteAuthor")
@@ -104,6 +105,8 @@ model BlockCategory {
 model Workshop {
   id          String         @id @default(cuid())
   title       String         @default("Untitled session")
+  /// Short one-line goal of the session — "what should be achieved by the end".
+  goals       String?
   description String?        @db.Text
   status      WorkshopStatus @default(DRAFT)
   clientName  String?
@@ -235,6 +238,10 @@ model Material {
   name       String
   quantity   Int?
   notes      String?
+  /// Optional external link (Miro, Figma, Google Docs, …). When set, the
+  /// material is treated as a tool/link asset rather than a physical item;
+  /// quantity is typically null in that case.
+  url        String?
 
   workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   block    Block?   @relation(fields: [blockId], references: [id], onDelete: SetNull)
@@ -243,23 +250,35 @@ model Material {
 }
 
 model Method {
-  id              String   @id @default(cuid())
+  id              String         @id @default(cuid())
   title           String
-  description     String?  @db.Text
-  instructions    String?  @db.Text
-  defaultDuration Int      @default(15)
+  description     String?        @db.Text
+  instructions    String?        @db.Text
+  defaultDuration Int            @default(15)
   category        String?
-  tags            String[] @default([])
-  isPublic        Boolean  @default(false)
+  tags            String[]       @default([])
+  isPublic        Boolean        @default(false)
+  /// Snapshot of the full block hierarchy (BLOCK / GROUP / BREAKOUT / NOTE)
+  /// in the same shape as WorkshopVersion.snapshot. Null for legacy single-block
+  /// system methods that pre-date the block-logic rollout.
+  blocksJson      Json?
+  /// Submission workflow. Default APPROVED so seeded system methods stay live;
+  /// new user submissions explicitly set PENDING via createMethodAction.
+  status          TemplateStatus @default(APPROVED)
+  rejectedReason  String?
+  approvedById    String?
+  approvedAt      DateTime?
   createdById     String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  createdBy User    @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  blocks    Block[]
+  createdBy  User    @relation("MethodCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  approvedBy User?   @relation("MethodApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  blocks     Block[]
 
   @@index([createdById])
   @@index([category])
+  @@index([status])
 }
 
 model Template {

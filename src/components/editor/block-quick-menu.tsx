@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   GripVertical,
   Lock,
@@ -11,6 +11,7 @@ import {
   Palette,
   MoreVertical,
   PanelRight,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -28,6 +29,7 @@ import {
   deleteBlockAction,
   duplicateBlockAction,
 } from "@/actions/block";
+import { SubmitMethodDialog } from "./submit-method-dialog";
 import type { BlockData, EditorContext } from "./types";
 
 /**
@@ -91,6 +93,7 @@ export function BlockActionsMenu({
   className?: string;
 }) {
   const [, startTransition] = useTransition();
+  const [submitMethodOpen, setSubmitMethodOpen] = useState(false);
 
   const persist = (fn: () => Promise<void>) =>
     startTransition(async () => {
@@ -188,6 +191,10 @@ export function BlockActionsMenu({
           <Copy className="mr-2 size-3.5" />
           Duplizieren
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setSubmitMethodOpen(true)}>
+          <Sparkles className="mr-2 size-3.5" />
+          Als Methode einreichen
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleDelete}
@@ -197,6 +204,15 @@ export function BlockActionsMenu({
           Löschen
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <SubmitMethodDialog
+        open={submitMethodOpen}
+        onOpenChange={setSubmitMethodOpen}
+        blockId={block.id}
+        blockType={block.type}
+        defaultTitle={block.title}
+        defaultDescription={block.description}
+        defaultInstructions={block.notes}
+      />
     </DropdownMenu>
   );
 }

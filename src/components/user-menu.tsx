@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LogOut, UserCircle } from "lucide-react";
+import { Award, LogOut, UserCircle } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -31,6 +32,7 @@ export function UserMenu({
 }: {
   user: { name: string; email: string; role: string };
 }) {
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-accent/60">
@@ -48,6 +50,12 @@ export function UserMenu({
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => router.push("/dashboard/me/contributions")}
+        >
+          <Award className="mr-2 size-4" />
+          Meine Beiträge
+        </DropdownMenuItem>
         <DropdownMenuItem disabled>
           <UserCircle className="mr-2 size-4" />
           Profil

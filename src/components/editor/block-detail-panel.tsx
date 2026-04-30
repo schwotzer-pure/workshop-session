@@ -84,11 +84,17 @@ export function BlockDetailPanel({
   const [titleValue, setTitleValue] = useState(block?.title ?? "");
   const [descValue, setDescValue] = useState(block?.description ?? "");
   const [notesValue, setNotesValue] = useState(block?.notes ?? "");
+  const lastSavedTitle = useRef(block?.title ?? "");
+  const lastSavedDesc = useRef(block?.description ?? "");
+  const lastSavedNotes = useRef(block?.notes ?? "");
 
   useEffect(() => {
     setTitleValue(block?.title ?? "");
     setDescValue(block?.description ?? "");
     setNotesValue(block?.notes ?? "");
+    lastSavedTitle.current = block?.title ?? "";
+    lastSavedDesc.current = block?.description ?? "";
+    lastSavedNotes.current = block?.notes ?? "";
     setTab("overview");
   }, [block?.id]);
 
@@ -176,7 +182,8 @@ export function BlockDetailPanel({
                 onUpdate(block.id, { title: e.target.value });
               }}
               onBlur={() => {
-                if (titleValue !== block.title) {
+                if (titleValue !== lastSavedTitle.current) {
+                  lastSavedTitle.current = titleValue;
                   persist(() =>
                     updateBlockAction({ id: block.id, title: titleValue })
                   );
@@ -280,11 +287,13 @@ export function BlockDetailPanel({
                       value={descValue}
                       onChange={(e) => setDescValue(e.target.value)}
                       onBlur={() => {
-                        if (descValue !== (block.description ?? "")) {
+                        const trimmed = descValue.trim();
+                        if (trimmed !== lastSavedDesc.current.trim()) {
+                          lastSavedDesc.current = descValue;
                           persist(() =>
                             updateBlockAction({
                               id: block.id,
-                              description: descValue.trim() || null,
+                              description: trimmed || null,
                             })
                           );
                         }
@@ -302,11 +311,13 @@ export function BlockDetailPanel({
                       value={notesValue}
                       onChange={(e) => setNotesValue(e.target.value)}
                       onBlur={() => {
-                        if (notesValue !== (block.notes ?? "")) {
+                        const trimmed = notesValue.trim();
+                        if (trimmed !== lastSavedNotes.current.trim()) {
+                          lastSavedNotes.current = notesValue;
                           persist(() =>
                             updateBlockAction({
                               id: block.id,
-                              notes: notesValue.trim() || null,
+                              notes: trimmed || null,
                             })
                           );
                         }

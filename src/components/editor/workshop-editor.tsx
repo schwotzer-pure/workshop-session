@@ -33,6 +33,7 @@ import { isRedirectError } from "@/lib/is-redirect";
 import { recalcBlocks, sumChildDurations, totalDuration } from "@/lib/recalc";
 import type { WorkshopWithBlocks, Category, AppUserListItem, MethodListItem } from "@/lib/queries";
 import { WorkshopHeader } from "./workshop-header";
+import type { WorkshopLink } from "./workshop-links";
 import { BlockCard, BlockCardGhost } from "./block-card";
 import { BlockGroup, BlockGroupGhost } from "./block-group";
 import { BlockBreakout, BlockBreakoutGhost } from "./block-breakout";
@@ -100,6 +101,7 @@ export function WorkshopEditor({
   categories: initialCategories,
   users,
   methods,
+  workshopLinks,
   currentUserId,
   isAdmin,
 }: {
@@ -107,6 +109,7 @@ export function WorkshopEditor({
   categories: Category[];
   users: AppUserListItem[];
   methods: MethodListItem[];
+  workshopLinks: WorkshopLink[];
   currentUserId: string;
   isAdmin: boolean;
 }) {
@@ -567,6 +570,8 @@ export function WorkshopEditor({
       <WorkshopHeader
         workshopId={workshop.id}
         title={workshop.title}
+        goals={workshop.goals}
+        description={workshop.description}
         clientName={workshop.clientName}
         tags={workshop.tags}
         status={workshop.status}
@@ -576,6 +581,7 @@ export function WorkshopEditor({
         totalDuration={totalMin}
         blockCount={topBlocks.length}
         dayId={day?.id ?? ""}
+        links={workshopLinks}
       />
 
       <DayTabs

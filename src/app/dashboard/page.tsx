@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { Plus, Clock3, ListChecks, CalendarDays, Sparkles, Building2, Archive } from "lucide-react";
+import {
+  Plus,
+  Clock3,
+  ListChecks,
+  CalendarDays,
+  Sparkles,
+  Building2,
+  Archive,
+  Users,
+} from "lucide-react";
 import { auth } from "@/auth/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   listWorkshopsForUser,
   getOrganization,
+  getOrganizationsInUnion,
   type WorkshopFilter,
 } from "@/lib/queries";
 import { createWorkshopAction } from "@/actions/workshop";
@@ -28,8 +38,6 @@ const STATUS_DOT: Record<string, string> = {
   COMPLETED: "bg-[var(--neon-violet)]/60",
   ARCHIVED: "bg-muted-foreground/30",
 };
-
-const FILTER_VALUES: WorkshopFilter[] = ["mine", "myOrg", "all", "archived"];
 
 function relativeTime(date: Date): string {
   const ms = Date.now() - date.getTime();
@@ -61,21 +69,28 @@ export default async function DashboardPage({
   if (!session?.user?.id) redirect("/login");
 
   const params = await searchParams;
-  const requestedFilter = params.filter as WorkshopFilter | undefined;
-  const filter: WorkshopFilter =
-    requestedFilter && FILTER_VALUES.includes(requestedFilter)
-      ? requestedFilter
-      : "mine";
+  const filter: WorkshopFilter = params.filter ?? "mine";
 
-  const userOrg = session.user.organizationId
-    ? await getOrganization(session.user.organizationId)
-    : null;
+  const [userOrg, allOrgs, workshops] = await Promise.all([
+    session.user.organizationId
+      ? getOrganization(session.user.organizationId)
+      : Promise.resolve(null),
+    getOrganizationsInUnion(),
+    listWorkshopsForUser(
+      session.user.id,
+      session.user.organizationId,
+      filter
+    ),
+  ]);
 
-  const workshops = await listWorkshopsForUser(
-    session.user.id,
-    session.user.organizationId,
-    filter
-  );
+  const unionOrg = allOrgs.find((o) => o.parentOrgId === null) ?? null;
+  const sisterOrgs = allOrgs
+    .filter(
+      (o) =>
+        o.parentOrgId === (unionOrg?.id ?? null) &&
+        o.id !== session.user.organizationId
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -100,7 +115,12 @@ export default async function DashboardPage({
         </form>
       </div>
 
-      <FilterTabs current={filter} userOrgName={userOrg?.name ?? null} />
+      <FilterTabs
+        current={filter}
+        userOrg={userOrg}
+        unionOrgId={unionOrg?.id ?? null}
+        sisterOrgs={sisterOrgs}
+      />
 
       {workshops.length === 0 ? (
         <EmptyState filter={filter} />
@@ -187,17 +207,19 @@ export default async function DashboardPage({
             </div>
           ))}
 
-          <form action={createWorkshopAction}>
-            <input type="hidden" name="title" value="Neue Session" />
-            <input type="hidden" name="startTime" value="09:00" />
-            <button
-              type="submit"
-              className="flex h-full min-h-[200px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/70 bg-background/30 text-sm text-muted-foreground transition-all hover:border-[var(--neon-violet)]/40 hover:bg-background/60 hover:text-foreground"
-            >
-              <Plus className="size-5" />
-              Neue Session erstellen
-            </button>
-          </form>
+          {filter === "mine" ? (
+            <form action={createWorkshopAction}>
+              <input type="hidden" name="title" value="Neue Session" />
+              <input type="hidden" name="startTime" value="09:00" />
+              <button
+                type="submit"
+                className="flex h-full min-h-[200px] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border/70 bg-background/30 text-sm text-muted-foreground transition-all hover:border-[var(--neon-violet)]/40 hover:bg-background/60 hover:text-foreground"
+              >
+                <Plus className="size-5" />
+                Neue Session erstellen
+              </button>
+            </form>
+          ) : null}
         </div>
       )}
     </div>
@@ -206,45 +228,61 @@ export default async function DashboardPage({
 
 function FilterTabs({
   current,
-  userOrgName,
+  userOrg,
+  unionOrgId,
+  sisterOrgs,
 }: {
   current: WorkshopFilter;
-  userOrgName: string | null;
+  userOrg: { id: string; name: string } | null;
+  unionOrgId: string | null;
+  sisterOrgs: Array<{ id: string; name: string }>;
 }) {
-  const tabs: Array<{
-    value: WorkshopFilter;
+  type Tab = {
+    value: string;
     label: string;
-    icon?: "org" | "archive";
-  }> = [
+    icon?: "users" | "org";
+  };
+  const tabs: Tab[] = [
     { value: "mine", label: "Meine" },
-    {
-      value: "myOrg",
-      label: userOrgName ?? "Meine Organisation",
-      icon: userOrgName ? "org" : undefined,
-    },
-    { value: "all", label: "Alle UNION" },
-    { value: "archived", label: "Archiv", icon: "archive" },
+    { value: "all", label: "UNION", icon: "users" },
+    ...(userOrg
+      ? [
+          {
+            value: userOrg.id,
+            label: userOrg.name,
+            icon: "org" as const,
+          },
+        ]
+      : []),
+    ...sisterOrgs.map((o) => ({
+      value: o.id,
+      label: o.name,
+      icon: "org" as const,
+    })),
   ];
+  // Note: unionOrgId is referenced for future "UNION direct" filter; kept as
+  // prop so the page can pass it without re-fetching.
+  void unionOrgId;
+
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="inline-flex items-center gap-1 rounded-xl border border-border/60 bg-background/40 p-1">
-        {tabs
-          .filter((t) => t.value !== "archived")
-          .map((t) => (
-            <Link
-              key={t.value}
-              href={`/dashboard?filter=${t.value}`}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
-                current === t.value
-                  ? "bg-gradient-to-r from-[var(--neon-cyan)]/15 via-[var(--neon-violet)]/15 to-[var(--neon-pink)]/15 text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.25)]"
-                  : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
-              )}
-            >
-              {t.icon === "org" ? <Building2 className="size-3.5" /> : null}
-              {t.label}
-            </Link>
-          ))}
+      <div className="inline-flex flex-wrap items-center gap-1 rounded-xl border border-border/60 bg-background/40 p-1">
+        {tabs.map((t) => (
+          <Link
+            key={t.value}
+            href={`/dashboard?filter=${t.value}`}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all",
+              current === t.value
+                ? "bg-gradient-to-r from-[var(--neon-cyan)]/15 via-[var(--neon-violet)]/15 to-[var(--neon-pink)]/15 text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.25)]"
+                : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+            )}
+          >
+            {t.icon === "users" ? <Users className="size-3.5" /> : null}
+            {t.icon === "org" ? <Building2 className="size-3.5" /> : null}
+            {t.label}
+          </Link>
+        ))}
       </div>
       <Link
         href={`/dashboard?filter=archived`}
@@ -263,36 +301,36 @@ function FilterTabs({
 }
 
 function EmptyState({ filter }: { filter: WorkshopFilter }) {
-  const labels: Record<WorkshopFilter, string> = {
-    mine: "Keine eigenen Sessions",
-    myOrg: "Noch nichts in deiner Organisation",
-    all: "Noch keine Sessions in der UNION",
-    archived: "Archiv ist leer",
-  };
+  let label: string;
+  if (filter === "mine") label = "Keine eigenen Sessions";
+  else if (filter === "all") label = "Noch keine Sessions in der UNION";
+  else if (filter === "archived") label = "Archiv ist leer";
+  else label = "Keine Sessions in dieser Firma";
+
   return (
     <div className="glass-card mx-auto flex max-w-2xl flex-col items-center rounded-2xl p-12 text-center">
       <div className="flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-[var(--neon-cyan)]/20 via-[var(--neon-violet)]/20 to-[var(--neon-pink)]/20">
         <Sparkles className="size-6 text-[var(--neon-violet)]" />
       </div>
-      <h2 className="mt-4 text-xl font-semibold tracking-tight">
-        {labels[filter]}
-      </h2>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight">{label}</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
         Lege eine Session an, baue deine Timeline mit Drag-and-Drop, locke
         wichtige Zeitpunkte und behalte den Überblick im Live-Modus.
       </p>
-      <form action={createWorkshopAction} className="mt-6">
-        <input type="hidden" name="title" value="Neue Session" />
-        <input type="hidden" name="startTime" value="09:00" />
-        <Button
-          type="submit"
-          size="lg"
-          className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white"
-        >
-          <Plus className="size-4" />
-          Neue Session erstellen
-        </Button>
-      </form>
+      {filter !== "archived" ? (
+        <form action={createWorkshopAction} className="mt-6">
+          <input type="hidden" name="title" value="Neue Session" />
+          <input type="hidden" name="startTime" value="09:00" />
+          <Button
+            type="submit"
+            size="lg"
+            className="bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] text-white"
+          >
+            <Plus className="size-4" />
+            Neue Session erstellen
+          </Button>
+        </form>
+      ) : null}
     </div>
   );
 }

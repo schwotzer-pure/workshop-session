@@ -1,16 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { CalendarDays, Clock3, ListChecks } from "lucide-react";
+import { AlignLeft, CalendarDays, Clock3, ListChecks, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { updateWorkshopAction, updateDayAction } from "@/actions/workshop";
 import { formatDuration, isValidHhmm } from "@/lib/time";
 import { StatusPicker, type WorkshopStatusValue } from "./status-picker";
+import { WorkshopLinks, type WorkshopLink } from "./workshop-links";
 
 export function WorkshopHeader({
   workshopId,
   title,
+  goals,
+  description,
   clientName,
   tags,
   status,
@@ -20,9 +23,12 @@ export function WorkshopHeader({
   totalDuration: totalMin,
   blockCount,
   dayId,
+  links,
 }: {
   workshopId: string;
   title: string;
+  goals: string | null;
+  description: string | null;
   clientName: string | null;
   tags: string[];
   status: WorkshopStatusValue;
@@ -32,9 +38,12 @@ export function WorkshopHeader({
   totalDuration: number;
   blockCount: number;
   dayId: string;
+  links: WorkshopLink[];
 }) {
   const [pending, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(title);
+  const [goalsValue, setGoalsValue] = useState(goals ?? "");
+  const [descriptionValue, setDescriptionValue] = useState(description ?? "");
   const [clientValue, setClientValue] = useState(clientName ?? "");
   const [dateValue, setDateValue] = useState(
     startDate ? new Date(startDate).toISOString().slice(0, 10) : ""
@@ -91,6 +100,60 @@ export function WorkshopHeader({
         />
       </div>
 
+      <div className="glass-card space-y-3 rounded-2xl p-4">
+        <label className="flex items-start gap-2.5">
+          <Target className="mt-1 size-4 shrink-0 text-[var(--neon-violet)]" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
+              Zielsetzung
+            </div>
+            <input
+              type="text"
+              value={goalsValue}
+              onChange={(e) => setGoalsValue(e.target.value)}
+              onBlur={() => {
+                if (goalsValue !== (goals ?? "")) {
+                  persist(() =>
+                    updateWorkshopAction({
+                      id: workshopId,
+                      goals: goalsValue.trim() || null,
+                    })
+                  );
+                }
+              }}
+              placeholder="Was soll am Ende des Workshops erreicht sein?"
+              className="mt-0.5 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+          </div>
+        </label>
+        <div className="border-t border-border/40" />
+        <label className="flex items-start gap-2.5">
+          <AlignLeft className="mt-1 size-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
+              Beschreibung
+            </div>
+            <textarea
+              value={descriptionValue}
+              onChange={(e) => setDescriptionValue(e.target.value)}
+              onBlur={() => {
+                if (descriptionValue !== (description ?? "")) {
+                  persist(() =>
+                    updateWorkshopAction({
+                      id: workshopId,
+                      description: descriptionValue.trim() || null,
+                    })
+                  );
+                }
+              }}
+              placeholder="Hintergrund, Auftrag, wichtige Rahmenbedingungen …"
+              rows={2}
+              className="mt-0.5 w-full resize-y bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:outline-none"
+            />
+          </div>
+        </label>
+      </div>
+
       <div className="glass-card flex flex-wrap items-center gap-x-8 gap-y-3 rounded-2xl p-4">
         <label className="flex items-center gap-2 text-sm">
           <CalendarDays className="size-4 text-muted-foreground" />
@@ -145,6 +208,8 @@ export function WorkshopHeader({
           <span className="ml-auto text-xs text-muted-foreground">Speichere …</span>
         ) : null}
       </div>
+
+      <WorkshopLinks workshopId={workshopId} links={links} />
 
       {tags.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">

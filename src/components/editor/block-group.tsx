@@ -230,7 +230,9 @@ function GroupHeader({
 }) {
   const [, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(block.title);
+  const lastSavedTitle = useRef(block.title);
   const [notesValue, setNotesValue] = useState(block.notes ?? "");
+  const lastSavedNotes = useRef(block.notes ?? "");
   const [showNotes, setShowNotes] = useState(Boolean(block.notes));
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const notesRef = useRef<HTMLTextAreaElement | null>(null);
@@ -312,7 +314,8 @@ function GroupHeader({
               ctx.onLocalUpdate(block.id, { title: e.target.value });
             }}
             onBlur={() => {
-              if (titleValue !== block.title) {
+              if (titleValue !== lastSavedTitle.current) {
+                lastSavedTitle.current = titleValue;
                 persist(() =>
                   updateBlockAction({ id: block.id, title: titleValue })
                 );
@@ -358,11 +361,13 @@ function GroupHeader({
               readOnly={readOnly}
               onChange={(e) => setNotesValue(e.target.value)}
               onBlur={() => {
-                if (notesValue !== (block.notes ?? "")) {
+                const trimmed = notesValue.trim();
+                if (trimmed !== lastSavedNotes.current.trim()) {
+                  lastSavedNotes.current = notesValue;
                   persist(() =>
                     updateBlockAction({
                       id: block.id,
-                      notes: notesValue.trim() || null,
+                      notes: trimmed || null,
                     })
                   );
                 }

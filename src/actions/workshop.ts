@@ -47,6 +47,8 @@ export async function createWorkshopAction(formData: FormData) {
 const UpdateWorkshopSchema = z.object({
   id: z.string(),
   title: z.string().trim().min(1).optional(),
+  goals: z.string().trim().max(500).nullable().optional(),
+  description: z.string().trim().max(10000).nullable().optional(),
   clientName: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
   startDate: z.string().nullable().optional(),
@@ -60,6 +62,8 @@ export async function updateWorkshopAction(input: z.input<typeof UpdateWorkshopS
     where: { id: data.id },
     data: {
       title: data.title,
+      goals: data.goals,
+      description: data.description,
       clientName: data.clientName,
       tags: data.tags,
       startDate: data.startDate ? new Date(data.startDate) : data.startDate === null ? null : undefined,
