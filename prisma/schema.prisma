@@ -52,6 +52,7 @@ model Organization {
 
   users     User[]
   workshops Workshop[]
+  boards    Board[]
 
   @@index([parentOrgId])
 }
@@ -82,6 +83,7 @@ model User {
   sharedWorkshops   WorkshopShare[]
   blockCategories   BlockCategory[]
   workshopVersions  WorkshopVersion[]
+  createdBoards     Board[]           @relation("BoardCreator")
 
   @@index([organizationId])
 }
@@ -128,6 +130,7 @@ model Workshop {
   materials     Material[]
   liveSessions  LiveSession[]
   versions      WorkshopVersion[]
+  boards        WorkshopBoard[]
 
   @@index([createdById])
   @@index([organizationId])
@@ -240,13 +243,62 @@ model Material {
   notes      String?
   /// Optional external link (Miro, Figma, Google Docs, …). When set, the
   /// material is treated as a tool/link asset rather than a physical item;
-  /// quantity is typically null in that case.
+  /// quantity is typically null in that case. WORKSHOP-LEVEL links
+  /// (blockId=null + url set) were migrated to the Board model — keep this
+  /// field around for block-level link assets only.
   url        String?
 
   workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   block    Block?   @relation(fields: [blockId], references: [id], onDelete: SetNull)
 
   @@index([workshopId])
+}
+
+/// External board/asset (Miro, Figma, Google Slides, Notion, …). Used as a
+/// shared library so the same Miro can be attached to multiple workshops.
+/// `isMaster=true` marks templates that any UNION trainer can pick into a
+/// new workshop with one click.
+model Board {
+  id             String   @id @default(cuid())
+  title          String
+  url            String
+  /// Auto-detected from URL on the client (miro / figma / notion / google-doc / …).
+  /// Stored only as a hint — the canonical kind is recomputed when displayed.
+  kind           String?
+  notes          String?  @db.Text
+  tags           String[] @default([])
+  /// Master boards are reusable templates. Listed prominently in the picker
+  /// and visible across orgs in the UNION.
+  isMaster       Boolean  @default(false)
+  createdById    String
+  organizationId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  createdBy    User            @relation("BoardCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  organization Organization?   @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  workshops    WorkshopBoard[]
+
+  @@index([createdById])
+  @@index([organizationId])
+  @@index([isMaster])
+}
+
+/// Many-to-many between Workshop and Board. Per-workshop overrides for the
+/// notes are allowed (e.g. the same master Miro might have different
+/// instructions per workshop).
+model WorkshopBoard {
+  workshopId String
+  boardId    String
+  notes      String?
+  addedAt    DateTime @default(now())
+
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  board    Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@id([workshopId, boardId])
+  @@index([workshopId])
+  @@index([boardId])
 }
 
 model Method {

@@ -6,7 +6,6 @@ import {
   BarChart3,
   ClipboardCheck,
   PlayCircle,
-  Printer,
   Radio,
 } from "lucide-react";
 import { auth } from "@/auth/auth";
@@ -15,7 +14,8 @@ import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 import {
   getWorkshopWithBlocks,
-  getWorkshopLinks,
+  listBoardsForWorkshop,
+  listMasterBoards,
   getCategoriesForUser,
   listAllUsers,
   getOrganization,
@@ -29,6 +29,7 @@ import { VersionsTrigger } from "@/components/editor/versions-trigger";
 import { LibrarySidebarTrigger } from "@/components/editor/library-sidebar";
 import { SubmitTemplateButton } from "@/components/editor/submit-template-dialog";
 import { ShareWorkshopButton } from "@/components/editor/share-dialog";
+import { PrintMenu } from "@/components/editor/print-menu";
 
 export default async function SessionDetailPage({
   params,
@@ -83,16 +84,25 @@ async function SessionContent({
     organizationName: string | null;
   };
 }) {
-  const [workshop, categories, users, activeLive, versions, methods, links] =
-    await Promise.all([
-      getWorkshopWithBlocks(id),
-      getCategoriesForUser(sessionUser.id),
-      listAllUsers(),
-      getActiveLiveSessionForWorkshop(id),
-      listWorkshopVersions(id),
-      listMethods(),
-      getWorkshopLinks(id),
-    ]);
+  const [
+    workshop,
+    categories,
+    users,
+    activeLive,
+    versions,
+    methods,
+    workshopBoards,
+    masterBoards,
+  ] = await Promise.all([
+    getWorkshopWithBlocks(id),
+    getCategoriesForUser(sessionUser.id),
+    listAllUsers(),
+    getActiveLiveSessionForWorkshop(id),
+    listWorkshopVersions(id),
+    listMethods(),
+    listBoardsForWorkshop(id),
+    listMasterBoards(),
+  ]);
   if (!workshop) notFound();
   const dayId = workshop.days[0]?.id ?? "";
 
@@ -150,14 +160,7 @@ async function SessionContent({
               Auswertung
             </Link>
           ) : null}
-          <Link
-            href={`/sessions/${id}/print`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:border-[var(--neon-violet)]/40 hover:text-foreground"
-            title="Druckansicht / als PDF speichern"
-          >
-            <Printer className="size-4" />
-            Drucken
-          </Link>
+          <PrintMenu workshopId={id} />
           {activeLive ? (
             <Link
               href={`/sessions/${id}/live/cockpit`}
@@ -193,7 +196,8 @@ async function SessionContent({
           categories={categories}
           users={users}
           methods={methods}
-          workshopLinks={links}
+          workshopBoards={workshopBoards}
+          masterBoards={masterBoards}
           currentUserId={sessionUser.id}
           isAdmin={sessionUser.role === "ADMIN"}
         />

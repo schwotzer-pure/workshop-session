@@ -6,6 +6,7 @@ import {
   CalendarDays,
   LibraryBig,
   LayoutTemplate,
+  Layers,
   Settings,
   Building2,
   ShieldCheck,
@@ -22,6 +23,7 @@ const NAV: Array<{
   { href: "/dashboard", label: "Sessions", icon: CalendarDays },
   { href: "/dashboard/templates", label: "Vorlagen", icon: LayoutTemplate },
   { href: "/dashboard/library", label: "Methoden", icon: LibraryBig },
+  { href: "/dashboard/boards", label: "Boards", icon: Layers },
   { href: "/dashboard/admin/templates", label: "Verwaltung", icon: ShieldCheck, adminOnly: true },
   { href: "/dashboard/settings", label: "Einstellungen", icon: Settings, adminOnly: true },
 ];

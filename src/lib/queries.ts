@@ -401,11 +401,102 @@ export async function getBlockDetails(blockId: string) {
   });
 }
 
+// ────────────────────────── Boards (workshop-level link assets) ──────────────────────────
+
+/**
+ * Cross-workshop board library. Returns every Board the user can see — for now
+ * that's UNION-wide. Master boards bubble to the top.
+ */
+export async function listBoards() {
+  return prisma.board.findMany({
+    orderBy: [{ isMaster: "desc" }, { updatedAt: "desc" }],
+    select: {
+      id: true,
+      title: true,
+      url: true,
+      kind: true,
+      notes: true,
+      tags: true,
+      isMaster: true,
+      createdAt: true,
+      updatedAt: true,
+      createdBy: { select: { id: true, name: true, username: true } },
+      organization: { select: { id: true, name: true, slug: true } },
+      workshops: {
+        select: {
+          workshopId: true,
+          workshop: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              startDate: true,
+              tags: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export type BoardListItem = Awaited<ReturnType<typeof listBoards>>[number];
+
+/** Master boards only — used in the picker dialog when attaching to a workshop. */
+export async function listMasterBoards() {
+  return prisma.board.findMany({
+    where: { isMaster: true },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      url: true,
+      kind: true,
+      notes: true,
+      tags: true,
+    },
+  });
+}
+
+export type MasterBoardItem = Awaited<ReturnType<typeof listMasterBoards>>[number];
+
+/** Boards attached to a specific workshop, in the order they were added. */
+export async function listBoardsForWorkshop(workshopId: string) {
+  const rows = await prisma.workshopBoard.findMany({
+    where: { workshopId },
+    orderBy: { addedAt: "asc" },
+    select: {
+      addedAt: true,
+      notes: true,
+      board: {
+        select: {
+          id: true,
+          title: true,
+          url: true,
+          kind: true,
+          notes: true,
+          tags: true,
+          isMaster: true,
+        },
+      },
+    },
+  });
+  return rows.map((r) => ({
+    ...r.board,
+    addedAt: r.addedAt,
+    workshopNotes: r.notes,
+  }));
+}
+
+export type WorkshopBoardItem = Awaited<
+  ReturnType<typeof listBoardsForWorkshop>
+>[number];
+
 /**
  * Workshop-level link assets (materials with `url` set and no block attached).
- * Used by the workshop header to show Miro/Figma/etc. links for the whole
- * session. Cached per-workshop; invalidated by material actions via
- * `revalidateTag("workshop-links:<id>")`.
+ * LEGACY — replaced by Board/WorkshopBoard. Kept temporarily so any code still
+ * calling it gets an empty array; the migration script moved existing data
+ * over. Remove once all callers use listBoardsForWorkshop.
  */
 export const getWorkshopLinks = unstable_cache(
   async (workshopId: string) => {

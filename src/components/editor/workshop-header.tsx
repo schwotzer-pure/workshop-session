@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { updateWorkshopAction, updateDayAction } from "@/actions/workshop";
 import { formatDuration, isValidHhmm } from "@/lib/time";
 import { StatusPicker, type WorkshopStatusValue } from "./status-picker";
-import { WorkshopLinks, type WorkshopLink } from "./workshop-links";
+import { WorkshopBoards } from "./workshop-boards";
+import type {
+  MasterBoardItem,
+  WorkshopBoardItem,
+} from "@/lib/queries";
 
 export function WorkshopHeader({
   workshopId,
@@ -23,7 +27,8 @@ export function WorkshopHeader({
   totalDuration: totalMin,
   blockCount,
   dayId,
-  links,
+  boards,
+  masterBoards,
 }: {
   workshopId: string;
   title: string;
@@ -38,7 +43,8 @@ export function WorkshopHeader({
   totalDuration: number;
   blockCount: number;
   dayId: string;
-  links: WorkshopLink[];
+  boards: WorkshopBoardItem[];
+  masterBoards: MasterBoardItem[];
 }) {
   const [pending, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(title);
@@ -209,7 +215,11 @@ export function WorkshopHeader({
         ) : null}
       </div>
 
-      <WorkshopLinks workshopId={workshopId} links={links} />
+      <WorkshopBoards
+        workshopId={workshopId}
+        boards={boards}
+        masterBoards={masterBoards}
+      />
 
       {tags.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">
