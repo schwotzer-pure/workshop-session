@@ -39,6 +39,15 @@ const STATUS_DOT: Record<string, string> = {
   ARCHIVED: "bg-muted-foreground/30",
 };
 
+/** OKLCH accent per status — used for top-strip + aurora-blob */
+const STATUS_ACCENT: Record<string, string> = {
+  DRAFT: "oklch(0.65 0.04 280)",
+  SCHEDULED: "oklch(0.82 0.16 200)",
+  RUNNING: "oklch(0.72 0.24 350)",
+  COMPLETED: "oklch(0.65 0.26 295)",
+  ARCHIVED: "oklch(0.55 0.04 280)",
+};
+
 function relativeTime(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
   const ms = Date.now() - d.getTime();
@@ -127,7 +136,9 @@ export default async function DashboardPage({
         <EmptyState filter={filter} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {workshops.map((s) => (
+          {workshops.map((s) => {
+            const accent = STATUS_ACCENT[s.status] ?? STATUS_ACCENT.DRAFT;
+            return (
             <div
               key={s.id}
               className="group glass-card relative overflow-hidden rounded-2xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_oklch(0.65_0.26_295/_0.25)] sm:p-6"
@@ -137,7 +148,20 @@ export default async function DashboardPage({
                 className="absolute inset-0 z-0 rounded-2xl"
                 aria-label={s.title || "Session öffnen"}
               />
-              <div className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-gradient-to-br from-[var(--neon-cyan)]/15 to-[var(--neon-pink)]/15 opacity-0 blur-2xl transition-opacity group-hover:opacity-100" />
+              {/* Status accent strip top */}
+              <div
+                className="pointer-events-none absolute left-0 right-0 top-0 h-1"
+                style={{
+                  background: `linear-gradient(90deg, ${accent}, color-mix(in oklch, ${accent} 40%, transparent))`,
+                }}
+              />
+              {/* Status-tinted aurora blob */}
+              <div
+                className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full opacity-40 blur-3xl transition-opacity group-hover:opacity-100"
+                style={{
+                  background: `radial-gradient(circle, color-mix(in oklch, ${accent} 35%, transparent), transparent 70%)`,
+                }}
+              />
               <div className="pointer-events-none relative space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -210,7 +234,8 @@ export default async function DashboardPage({
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           {filter === "mine" ? (
             <form action={createWorkshopAction}>

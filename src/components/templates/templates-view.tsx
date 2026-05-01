@@ -455,105 +455,119 @@ function TemplateCard({
   };
 
   return (
-    <article
-      className="group glass-card relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 pl-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_oklch(0.65_0.26_295/_0.4)]"
-      style={{ borderLeft: `3px solid ${accent}` }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-          style={{ backgroundColor: `${accent}26`, color: accent }}
-        >
-          {template.theme}
-        </span>
-        <div className="flex items-center gap-1">
-          {isTopRated ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-violet)]/20 px-2 py-0.5 text-[10px] font-medium text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.3)]">
-              <Award className="size-2.5" />
-              Top
-            </span>
-          ) : null}
-          {isPopular ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-[var(--neon-pink)]/15 px-2 py-0.5 text-[10px] font-medium text-[var(--neon-pink)]">
-              <Flame className="size-2.5" />
-              Beliebt
-            </span>
-          ) : null}
-          {isAdmin ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                onClick={(e) => e.stopPropagation()}
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-all hover:bg-accent/80 hover:text-foreground group-hover:opacity-100 data-[popup-open]:bg-accent/80 data-[popup-open]:text-foreground data-[popup-open]:opacity-100"
-                aria-label="Vorlagen-Aktionen"
-              >
-                <MoreVertical className="size-3.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" sideOffset={4} className="w-44">
-                <DropdownMenuItem
-                  onClick={handleDelete}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="mr-2 size-3.5" />
-                  Vorlage löschen
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : null}
-        </div>
-      </div>
+    <article className="group glass-card relative flex flex-col gap-4 overflow-hidden rounded-2xl p-4 transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_oklch(0.65_0.26_295/_0.25)] sm:p-6">
+      {/* Theme accent strip */}
+      <div
+        className="absolute left-0 right-0 top-0 h-1"
+        style={{
+          background: `linear-gradient(90deg, ${accent}, color-mix(in oklch, ${accent} 40%, transparent))`,
+        }}
+      />
+      {/* Aurora blob (theme-tinted) */}
+      <div
+        className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full opacity-40 blur-3xl transition-opacity group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(circle, color-mix(in oklch, ${accent} 35%, transparent), transparent 70%)`,
+        }}
+      />
 
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold leading-snug">{template.title}</h3>
-        {template.description ? (
-          <p className="line-clamp-3 text-sm text-muted-foreground">
-            {template.description}
-          </p>
-        ) : null}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1">
-          <Clock className="size-3" />
-          {formatDuration(template.duration)}
-        </span>
-        {template.useCount > 0 ? (
-          <span className="inline-flex items-center gap-1">
-            <TrendingUp className="size-3" />
-            {template.useCount}× verwendet
+      <div className="relative flex flex-1 flex-col gap-4">
+        <div className="flex items-start justify-between gap-2">
+          <span
+            className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider"
+            style={{ backgroundColor: `${accent}1f`, color: accent }}
+          >
+            {template.theme}
           </span>
-        ) : null}
-      </div>
-
-      {template.tags.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
-          {template.tags.slice(0, 4).map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-[10px] text-muted-foreground"
-            >
-              {t}
-            </span>
-          ))}
+          <div className="flex items-center gap-1">
+            {isTopRated ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-[var(--neon-cyan)]/20 to-[var(--neon-violet)]/20 px-2 py-0.5 text-[10px] font-medium text-foreground shadow-[inset_0_0_0_1px_oklch(0.65_0.26_295/_0.3)]">
+                <Award className="size-2.5" />
+                Top
+              </span>
+            ) : null}
+            {isPopular ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[var(--neon-pink)]/15 px-2 py-0.5 text-[10px] font-medium text-[var(--neon-pink)]">
+                <Flame className="size-2.5" />
+                Beliebt
+              </span>
+            ) : null}
+            {isAdmin ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-all hover:bg-accent/80 hover:text-foreground group-hover:opacity-100 data-[popup-open]:bg-accent/80 data-[popup-open]:text-foreground data-[popup-open]:opacity-100"
+                  aria-label="Vorlagen-Aktionen"
+                >
+                  <MoreVertical className="size-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={4} className="w-44">
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="mr-2 size-3.5" />
+                    Vorlage löschen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
         </div>
-      ) : null}
 
-      <div className="border-t border-border/60 pt-3">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold leading-tight tracking-tight">
+            {template.title}
+          </h3>
+          {template.description ? (
+            <p className="line-clamp-3 text-sm text-muted-foreground">
+              {template.description}
+            </p>
+          ) : null}
+        </div>
+
+        {template.tags.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {template.tags.slice(0, 4).map((t) => (
+              <span
+                key={t}
+                className="rounded-full border border-border/60 bg-background/60 px-2 py-0.5 text-[11px] text-muted-foreground"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="size-3.5" />
+            {formatDuration(template.duration)}
+          </span>
+          {template.useCount > 0 ? (
+            <span className="inline-flex items-center gap-1.5">
+              <TrendingUp className="size-3.5" />
+              {template.useCount}× verwendet
+            </span>
+          ) : null}
+          <span className="ml-auto truncate text-muted-foreground/70">
+            von {template.createdBy.name}
+          </span>
+        </div>
+
         <RatingStars
           value={myRating}
           avg={template.avgRating}
           count={template.ratingCount}
           onRate={handleRate}
         />
-      </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-        <span className="truncate">von {template.createdBy.name}</span>
         <button
           type="button"
           onClick={handleUse}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-1 text-xs font-medium text-white hover:opacity-95"
+          className="mt-auto inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-2 text-sm font-medium text-white shadow-[0_4px_20px_-6px_oklch(0.65_0.26_295/_0.5)] transition-opacity hover:opacity-95"
         >
-          <Sparkles className="size-3" />
+          <Sparkles className="size-3.5" />
           Als Session erstellen
         </button>
       </div>

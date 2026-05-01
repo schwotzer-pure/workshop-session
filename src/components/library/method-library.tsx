@@ -11,6 +11,7 @@ import {
   Tag,
   Trash2,
   X,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -394,27 +395,38 @@ function MethodCard({
   };
 
   return (
-    <article
-      className="group glass-card relative flex flex-col gap-3 overflow-hidden rounded-2xl p-4 pl-5 transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_30px_-12px_oklch(0.65_0.26_295/_0.4)]"
-      style={{ borderLeft: `3px solid ${accent}` }}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-          style={{ backgroundColor: `${accent}26`, color: accent }}
+    <article className="group glass-card relative flex flex-col gap-3 overflow-hidden rounded-2xl p-5 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_40px_-8px_oklch(0.65_0.26_295/_0.25)]">
+      {/* Big category bubble + meta header */}
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className="flex size-12 shrink-0 items-center justify-center rounded-2xl shadow-[inset_0_-2px_8px_rgba(0,0,0,0.05)]"
+          style={{
+            background: `linear-gradient(135deg, color-mix(in oklch, ${accent} 25%, transparent), color-mix(in oklch, ${accent} 8%, transparent))`,
+            color: accent,
+          }}
         >
-          {catLabel}
-        </span>
-        <div className="flex items-center gap-1">
-          <span className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-background/40 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
-            <Clock className="size-2.5" />
-            {method.defaultDuration}m
+          <Zap className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <span
+            className="text-[10px] font-bold uppercase tracking-[0.25em]"
+            style={{ color: accent }}
+          >
+            {catLabel}
+          </span>
+          <h3 className="mt-0.5 text-base font-semibold leading-tight tracking-tight">
+            {method.title}
+          </h3>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
+          <span className="rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-muted-foreground">
+            {method.defaultDuration} min
           </span>
           {isAdmin ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 onClick={(e) => e.stopPropagation()}
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-all hover:bg-accent/80 hover:text-foreground group-hover:opacity-100 data-[popup-open]:bg-accent/80 data-[popup-open]:text-foreground data-[popup-open]:opacity-100"
+                className="flex size-6 items-center justify-center rounded-md text-muted-foreground/60 opacity-0 transition-all hover:bg-accent/80 hover:text-foreground group-hover:opacity-100 data-[popup-open]:bg-accent/80 data-[popup-open]:text-foreground data-[popup-open]:opacity-100"
                 aria-label="Methoden-Aktionen"
               >
                 <MoreVertical className="size-3.5" />
@@ -433,40 +445,34 @@ function MethodCard({
         </div>
       </div>
 
-      <div className="space-y-1">
-        <h3 className="text-base font-semibold leading-snug">{method.title}</h3>
-        {method.description ? (
-          <p className="line-clamp-3 text-sm text-muted-foreground">
-            {method.description}
-          </p>
-        ) : null}
-      </div>
-
-      {method.tags.length > 0 ? (
-        <div className="flex flex-wrap gap-1">
-          {method.tags.slice(0, 4).map((t) => (
-            <span
-              key={t}
-              className="inline-flex items-center gap-1 rounded-full border border-border/40 bg-background/40 px-1.5 py-0.5 text-[10px] text-muted-foreground"
-            >
-              <Tag className="size-2.5" />
-              {t}
-            </span>
-          ))}
-        </div>
+      {method.description ? (
+        <p className="line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
+          {method.description}
+        </p>
       ) : null}
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-        <span className="truncate">
-          {method.createdBy?.name ? `von ${method.createdBy.name}` : ""}
-        </span>
+      <div className="mt-auto flex items-center justify-between gap-2">
+        {method.tags.length > 0 ? (
+          <div className="flex min-w-0 flex-wrap items-center gap-1 text-[11px] text-muted-foreground/70">
+            <Tag className="size-3 shrink-0 text-muted-foreground/60" />
+            {method.tags.slice(0, 3).map((t) => (
+              <span key={t} className="truncate">
+                #{t}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="truncate text-[11px] text-muted-foreground/60">
+            {method.createdBy?.name ? `von ${method.createdBy.name}` : ""}
+          </span>
+        )}
         <button
           type="button"
           onClick={handleUse}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-1 text-xs font-medium text-white hover:opacity-95"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[var(--neon-cyan)]/15 via-[var(--neon-violet)]/15 to-[var(--neon-pink)]/15 px-3 py-1.5 text-[11px] font-medium text-foreground transition-all hover:from-[var(--neon-cyan)]/25 hover:via-[var(--neon-violet)]/25 hover:to-[var(--neon-pink)]/25"
         >
           <Sparkles className="size-3" />
-          Session mit Methode erstellen
+          Session erstellen
         </button>
       </div>
     </article>
