@@ -179,6 +179,91 @@
   }
 }
 
+/* Tiptap / Markdown rendered content — shared by RichTextEditor and MarkdownView */
+.tiptap-prose {
+  line-height: 1.5;
+}
+
+.tiptap-prose .ProseMirror {
+  outline: none;
+}
+
+.tiptap-prose p {
+  margin: 0 0 0.5rem 0;
+}
+
+.tiptap-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap-prose h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.25rem 0;
+  letter-spacing: -0.005em;
+}
+
+.tiptap-prose h3:first-child {
+  margin-top: 0;
+}
+
+.tiptap-prose ul,
+.tiptap-prose ol {
+  margin: 0.25rem 0 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.tiptap-prose ul {
+  list-style: disc;
+}
+
+.tiptap-prose ol {
+  list-style: decimal;
+}
+
+.tiptap-prose li {
+  margin: 0.1rem 0;
+}
+
+.tiptap-prose li > p {
+  margin: 0;
+}
+
+.tiptap-prose strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.tiptap-prose em {
+  font-style: italic;
+}
+
+.tiptap-prose s {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.tiptap-prose a {
+  color: var(--neon-violet);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tiptap-prose a:hover {
+  color: var(--neon-pink);
+}
+
+/* Compact variant for tight spaces (workshop header, summaries) */
+.tiptap-prose-compact p,
+.tiptap-prose-compact ul,
+.tiptap-prose-compact ol {
+  margin: 0.15rem 0;
+}
+
+.tiptap-prose-compact h3 {
+  margin: 0.4rem 0 0.15rem 0;
+}
+
 @media print {
   @page {
     size: A4;

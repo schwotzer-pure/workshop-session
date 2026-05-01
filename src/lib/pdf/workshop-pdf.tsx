@@ -12,6 +12,7 @@ import { recalcBlocks, sumChildDurations, totalDuration } from "@/lib/recalc";
 import { formatDuration } from "@/lib/time";
 import { detectLinkKind, safeHost } from "@/lib/link-icon";
 import { oklchToHex, withAlpha } from "./color-utils";
+import { renderMarkdown } from "./markdown-to-pdf";
 import type { WorkshopWithBlocks } from "@/lib/queries";
 
 type Block = WorkshopWithBlocks["days"][number]["blocks"][number];
@@ -930,7 +931,7 @@ export function WorkshopPdf({
         {workshop.goals ? (
           <View style={styles.goalHero}>
             <Text style={styles.goalHeroLabel}>Zielsetzung</Text>
-            <Text style={styles.goalHeroText}>{workshop.goals}</Text>
+            <View>{renderMarkdown(workshop.goals, styles.goalHeroText)}</View>
           </View>
         ) : (
           <View style={styles.goalHeroEmpty}>
@@ -943,7 +944,9 @@ export function WorkshopPdf({
         )}
 
         {workshop.description ? (
-          <Text style={styles.description}>{workshop.description}</Text>
+          <View style={{ marginTop: 14 }}>
+            {renderMarkdown(workshop.description, styles.description)}
+          </View>
         ) : null}
 
         <View style={styles.kpiRow}>

@@ -36,6 +36,7 @@ import { formatDuration } from "@/lib/time";
 import { detectLinkKind, safeHost } from "@/lib/link-icon";
 import { getMethodCategoryAccent } from "@/lib/method-categories";
 import { cn } from "@/lib/utils";
+import { MarkdownView } from "@/components/ui/markdown-view";
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT: "Entwurf",
@@ -219,7 +220,9 @@ async function OverviewHero({ id }: { id: string }) {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
                   Zielsetzung
                 </div>
-                <p className="mt-1 text-sm">{workshop.goals}</p>
+                <MarkdownView className="mt-1" compact>
+                  {workshop.goals}
+                </MarkdownView>
               </div>
             </div>
           ) : null}
@@ -233,9 +236,9 @@ async function OverviewHero({ id }: { id: string }) {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
                   Beschreibung
                 </div>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
+                <MarkdownView className="mt-1 text-muted-foreground">
                   {workshop.description}
-                </p>
+                </MarkdownView>
               </div>
             </div>
           ) : null}

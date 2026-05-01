@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { AlignLeft, CalendarDays, Clock3, ListChecks, Target } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { updateWorkshopAction, updateDayAction } from "@/actions/workshop";
 import { formatDuration, isValidHhmm } from "@/lib/time";
 import { StatusPicker, type WorkshopStatusValue } from "./status-picker";
@@ -49,7 +50,9 @@ export function WorkshopHeader({
   const [pending, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(title);
   const [goalsValue, setGoalsValue] = useState(goals ?? "");
+  const lastSavedGoals = useRef(goals ?? "");
   const [descriptionValue, setDescriptionValue] = useState(description ?? "");
+  const lastSavedDescription = useRef(description ?? "");
   const [clientValue, setClientValue] = useState(clientName ?? "");
   const [dateValue, setDateValue] = useState(
     startDate ? new Date(startDate).toISOString().slice(0, 10) : ""
@@ -108,57 +111,58 @@ export function WorkshopHeader({
       </div>
 
       <div className="glass-card space-y-3 rounded-2xl p-4">
-        <label className="flex items-start gap-2.5">
+        <div className="flex items-start gap-2.5">
           <Target className="mt-1 size-4 shrink-0 text-[var(--neon-violet)]" />
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
               Zielsetzung
             </div>
-            <input
-              type="text"
+            <RichTextEditor
               value={goalsValue}
-              onChange={(e) => setGoalsValue(e.target.value)}
+              onChange={setGoalsValue}
               onBlur={() => {
-                if (goalsValue !== (goals ?? "")) {
+                const trimmed = goalsValue.trim();
+                if (trimmed !== lastSavedGoals.current.trim()) {
+                  lastSavedGoals.current = goalsValue;
                   persist(() =>
                     updateWorkshopAction({
                       id: workshopId,
-                      goals: goalsValue.trim() || null,
+                      goals: trimmed || null,
                     })
                   );
                 }
               }}
               placeholder="Was soll am Ende des Workshops erreicht sein?"
-              className="mt-0.5 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:outline-none"
+              compact
             />
           </div>
-        </label>
+        </div>
         <div className="border-t border-border/40" />
-        <label className="flex items-start gap-2.5">
+        <div className="flex items-start gap-2.5">
           <AlignLeft className="mt-1 size-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/80">
               Beschreibung
             </div>
-            <textarea
+            <RichTextEditor
               value={descriptionValue}
-              onChange={(e) => setDescriptionValue(e.target.value)}
+              onChange={setDescriptionValue}
               onBlur={() => {
-                if (descriptionValue !== (description ?? "")) {
+                const trimmed = descriptionValue.trim();
+                if (trimmed !== lastSavedDescription.current.trim()) {
+                  lastSavedDescription.current = descriptionValue;
                   persist(() =>
                     updateWorkshopAction({
                       id: workshopId,
-                      description: descriptionValue.trim() || null,
+                      description: trimmed || null,
                     })
                   );
                 }
               }}
-              placeholder="Hintergrund, Auftrag, wichtige Rahmenbedingungen …"
-              rows={2}
-              className="mt-0.5 w-full resize-y bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 focus:outline-none"
+              placeholder="Hintergrund, Auftrag, wichtige Rahmenbedingungen, Bullets …"
             />
           </div>
-        </label>
+        </div>
       </div>
 
       <div className="glass-card flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl p-3 sm:gap-x-8 sm:p-4">
