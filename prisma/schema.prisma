@@ -81,6 +81,7 @@ model User {
   liveControllers   LiveSession[]     @relation("LiveController")
   coachNotes        CoachNote[]       @relation("CoachNoteAuthor")
   sharedWorkshops   WorkshopShare[]
+  shareLinks        WorkshopShareLink[] @relation("ShareLinkCreator")
   blockCategories   BlockCategory[]
   workshopVersions  WorkshopVersion[]
   createdBoards     Board[]           @relation("BoardCreator")
@@ -129,6 +130,7 @@ model Workshop {
 
   days          Day[]
   shares        WorkshopShare[]
+  shareLinks    WorkshopShareLink[]
   comments      Comment[]
   materials     Material[]
   liveSessions  LiveSession[]
@@ -167,6 +169,37 @@ model WorkshopShare {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([workshopId, userId])
+}
+
+/// Tokenized read-only share link for external recipients (clients, sponsors).
+/// Anyone with the URL can view the workshop content (without trainer-notes).
+/// Owner can revoke or set expiry. No login required.
+model WorkshopShareLink {
+  id          String    @id @default(cuid())
+  workshopId  String
+  /// Random unguessable token used in the public URL.
+  token       String    @unique
+  /// Optional human label ("Kunde Pure AG", "Auftraggeber Müller").
+  label       String?
+  /// Optional recipient email — purely for tracking who got the link.
+  email       String?
+  createdById String
+  createdAt   DateTime  @default(now())
+  /// If set: link expires at this point.
+  expiresAt   DateTime?
+  /// If set: link is revoked at this point (manual kill switch).
+  revokedAt   DateTime?
+  /// View counter — incremented on every public visit.
+  viewCount   Int       @default(0)
+  /// Last time the link was opened.
+  lastViewAt  DateTime?
+
+  workshop  Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("ShareLinkCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([workshopId])
+  @@index([token])
+  @@index([createdById])
 }
 
 model Day {
