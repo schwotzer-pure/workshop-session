@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UnionLogo } from "@/components/union-logo";
+import { SessionsMark } from "@/components/brand/sessions-mark";
+import { SessionsWordmark } from "@/components/brand/sessions-wordmark";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -55,22 +58,24 @@ function SidebarBody({
 
   return (
     <>
-      <div className="flex h-16 items-center border-b border-border/60 px-6">
+      <div className="flex h-16 items-center border-b border-border/60 px-5">
         <Link
           href="/dashboard"
-          className="flex flex-col leading-none"
+          className="inline-flex items-center gap-2.5"
           onClick={onItemClick}
+          aria-label="Sessions by UNION"
         >
-          <span className="neon-text text-lg font-semibold tracking-tight">
-            MySession
-          </span>
-          <span className="mt-1 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-            by
-            <UnionLogo
-              aria-label="UNION"
-              className="h-2.5 w-auto text-foreground/80"
-            />
-          </span>
+          <SessionsMark size={26} />
+          <div className="flex flex-col leading-none">
+            <SessionsWordmark size={18} />
+            <span className="mt-1.5 flex items-center gap-1.5 text-[9px] font-medium text-muted-foreground">
+              by
+              <UnionLogo
+                aria-label="UNION"
+                className="h-2 w-auto text-foreground/80"
+              />
+            </span>
+          </div>
         </Link>
       </div>
 
@@ -104,17 +109,22 @@ function SidebarBody({
         })}
       </nav>
 
-      <div className="space-y-2 border-t border-border/60 p-4 text-xs text-muted-foreground">
-        <div>
-          <p className="font-medium text-foreground/80">{user.name}</p>
-          <p className="font-mono">@{user.username} · {user.role.toLowerCase()}</p>
+      <div className="border-t border-border/60">
+        <div className="flex justify-center px-4 py-3">
+          <ThemeToggle />
         </div>
-        {user.organizationName ? (
-          <p className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[var(--neon-cyan)]/10 to-[var(--neon-violet)]/10 px-2 py-1 font-medium text-foreground/70">
-            <Building2 className="size-3" />
-            {user.organizationName}
-          </p>
-        ) : null}
+        <div className="space-y-2 border-t border-border/60 p-4 text-xs text-muted-foreground">
+          <div>
+            <p className="font-medium text-foreground/80">{user.name}</p>
+            <p className="font-mono">@{user.username} · {user.role.toLowerCase()}</p>
+          </div>
+          {user.organizationName ? (
+            <p className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-[var(--neon-cyan)]/10 to-[var(--neon-violet)]/10 px-2 py-1 font-medium text-foreground/70">
+              <Building2 className="size-3" />
+              {user.organizationName}
+            </p>
+          ) : null}
+        </div>
       </div>
     </>
   );

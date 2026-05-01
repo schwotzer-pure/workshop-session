@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth/auth";
 import { LoginForm } from "./login-form";
+import { SessionsLockup } from "@/components/brand/sessions-lockup";
 
 export default async function LoginPage({
   searchParams,
@@ -14,10 +15,14 @@ export default async function LoginPage({
 
   return (
     <main className="aurora-bg-strong relative min-h-screen w-full overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,oklch(0.99_0_0/_0.7),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,oklch(0.65_0.26_295/_0.18),transparent_60%)]" />
       <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col items-stretch justify-center px-6 py-12">
-        <Link href="/" className="mb-10 self-center text-2xl font-bold tracking-tight">
-          <span className="neon-text">MySession</span>
+        <Link
+          href="/"
+          className="mb-10 self-center"
+          aria-label="Sessions by UNION"
+        >
+          <SessionsLockup size={36} animate />
         </Link>
 
         <div className="glass-card rounded-3xl p-8 shadow-[0_8px_40px_-12px_oklch(0.65_0.26_295/_0.25)]">
@@ -40,7 +45,7 @@ export default async function LoginPage({
         </div>
 
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          MySession · hellopure · Workshop-Planung neu gedacht
+          Sessions by UNION · hellopure · Workshop-Planung neu gedacht
         </p>
       </div>
     </main>

@@ -149,7 +149,7 @@ export function PrintView({
       {/* Header */}
       <header className="mb-8 space-y-2">
         <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-          MySession Workshop-Plan
+          Sessions Workshop-Plan
         </div>
         <h1 className="text-4xl font-bold tracking-tight">{workshop.title}</h1>
         {workshop.clientName ? (
@@ -396,7 +396,7 @@ export function PrintView({
       ) : null}
 
       <footer className="mt-12 border-t border-zinc-200 pt-4 text-[10px] uppercase tracking-wider text-zinc-400">
-        MySession · {workshop.title}
+        Sessions · {workshop.title}
       </footer>
     </main>
   );

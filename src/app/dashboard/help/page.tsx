@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Hilfe & FAQ — MySession",
+  title: "Hilfe & FAQ — Sessions",
 };
 
 type FeatureCard = {
@@ -266,7 +266,7 @@ export default function HelpPage() {
             Hilfe & FAQ
           </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Was kann MySession?
+            Was kann Sessions?
           </h1>
           <p className="max-w-2xl text-base text-muted-foreground">
             Alle Features auf einen Blick — und Antworten auf häufige Fragen.

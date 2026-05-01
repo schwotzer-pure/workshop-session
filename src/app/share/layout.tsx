@@ -20,7 +20,7 @@ export default function ShareLayout({
 }
 
 export const metadata = {
-  title: "Workshop-Vorschau — MySession",
+  title: "Workshop-Vorschau — Sessions",
   // Discourage indexing: shared links should not appear in search results
   robots: { index: false, follow: false },
 };

@@ -34,15 +34,15 @@ export default async function SharePage({
         <Link
           href="/"
           className="neon-text text-sm font-semibold tracking-tight"
-          aria-label="MySession"
+          aria-label="Sessions"
         >
-          MySession
+          Sessions
         </Link>
       </header>
       <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
         <SharedWorkshopView workshop={result.workshop} />
         <p className="mx-auto mt-12 max-w-3xl text-center text-[11px] text-muted-foreground/60">
-          Diese Vorschau wurde mit MySession erstellt — Workshop-Planung von{" "}
+          Diese Vorschau wurde mit Sessions erstellt — Workshop-Planung von{" "}
           <span className="text-foreground/70">UNION</span>.
         </p>
       </main>

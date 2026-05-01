@@ -6,7 +6,7 @@ import { TemplateMockups } from "@/components/design-lab/template-mockups";
 import { MethodMockups } from "@/components/design-lab/method-mockups";
 
 export const metadata = {
-  title: "Design-Lab — MySession",
+  title: "Design-Lab — Sessions",
 };
 
 export default async function DesignLabPage() {

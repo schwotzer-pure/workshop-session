@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Sessions by UNION — Brand Refresh Exploration</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: oklch(0.14 0.02 280);
+    --bg-2: oklch(0.18 0.02 280);
+    --fg: oklch(0.98 0 0);
+    --muted: oklch(0.7 0.02 280);
+    --line: oklch(1 0 0 / 0.10);
+    --neon-cyan: oklch(0.82 0.16 200);
+    --neon-violet: oklch(0.65 0.26 295);
+    --neon-pink: oklch(0.72 0.24 350);
+    --neon-lime: oklch(0.88 0.22 145);
+  }
+  html, body { margin: 0; background: oklch(0.10 0.02 280); color: var(--fg); font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+
+  /* ── helpers used inside artboards ─────────────────────── */
+  .neon-text {
+    background: linear-gradient(120deg, var(--neon-cyan) 0%, var(--neon-violet) 50%, var(--neon-pink) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .aurora {
+    background:
+      radial-gradient(50rem 35rem at 0% 0%, oklch(0.82 0.16 200 / 0.28), transparent 55%),
+      radial-gradient(40rem 30rem at 100% 0%, oklch(0.72 0.24 350 / 0.25), transparent 55%),
+      radial-gradient(45rem 32rem at 50% 100%, oklch(0.65 0.26 295 / 0.22), transparent 55%),
+      var(--bg);
+  }
+  .aurora-soft {
+    background:
+      radial-gradient(60rem 40rem at 10% -10%, oklch(0.82 0.16 200 / 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at 95% 0%, oklch(0.72 0.24 350 / 0.15), transparent 60%),
+      radial-gradient(40rem 30rem at 50% 100%, oklch(0.65 0.26 295 / 0.12), transparent 60%),
+      var(--bg);
+  }
+  .glass {
+    background: color-mix(in oklch, var(--bg-2) 70%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid var(--line);
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .grain::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  }
+
+  /* ── artboard internal layout ──────────────────────────── */
+  .ab { width: 100%; height: 100%; position: relative; overflow: hidden; color: var(--fg); }
+  .ab.light { color: oklch(0.18 0.01 260); background: oklch(0.99 0.005 280); }
+  .ab .pad { padding: 32px; height: 100%; }
+  .stack { display:flex; flex-direction:column; gap: 16px; }
+  .row   { display:flex; gap: 16px; align-items:center; }
+
+  /* card meta tag */
+  .tag {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 4px 9px; border-radius: 999px;
+    font: 500 10px/1 'JetBrains Mono', monospace;
+    letter-spacing: .08em; text-transform: uppercase;
+    border: 1px solid var(--line);
+    background: color-mix(in oklch, var(--bg-2) 60%, transparent);
+    color: var(--muted);
+  }
+  .tag .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--neon-violet); box-shadow: 0 0 8px var(--neon-violet); }
+  .tag.cyan  .dot { background: var(--neon-cyan);  box-shadow: 0 0 8px var(--neon-cyan); }
+  .tag.pink  .dot { background: var(--neon-pink);  box-shadow: 0 0 8px var(--neon-pink); }
+  .tag.lime  .dot { background: var(--neon-lime);  box-shadow: 0 0 8px var(--neon-lime); }
+
+  /* common label/title scale inside artboards */
+  .eyebrow { font: 500 11px/1 'JetBrains Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .title-xl { font: 700 56px/1.0 'Geist', sans-serif; letter-spacing: -0.025em; }
+  .title-lg { font: 700 36px/1.05 'Geist', sans-serif; letter-spacing: -0.02em; }
+  .title-md { font: 600 22px/1.15 'Geist', sans-serif; letter-spacing: -0.012em; }
+  .body { font: 400 14px/1.5 'Geist', sans-serif; color: var(--muted); }
+
+  /* ──────── DIRECTION 1 · SAFE ──────── */
+  /* Wordmark — refined geometric Geist-derived, manual ligature 'My' */
+  .wm-safe {
+    font-family: 'Geist', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: .9;
+  }
+
+  /* ──────── DIRECTION 2 · BOLD ──────── */
+  /* Mark: stack of three time-blocks fitted into an "S" silhouette. */
+  .mark-bold {
+    display: inline-block; position: relative;
+    border-radius: 12px;
+    background: linear-gradient(180deg, oklch(0.22 0.03 280), oklch(0.16 0.02 280));
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .mark-bold .blk {
+    position: absolute; left: 16%; right: 16%;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet) 60%, var(--neon-pink));
+    box-shadow: 0 0 18px oklch(0.65 0.26 295 / 0.45);
+  }
+  .mark-bold .blk.b1 { top: 18%;  height: 14%; right: 36%; }
+  .mark-bold .blk.b2 { top: 43%;  height: 14%; left: 24%; right: 16%; opacity: .85; }
+  .mark-bold .blk.b3 { top: 68%;  height: 14%; left: 16%; right: 36%; opacity: .65; }
+
+  /* ──────── DIRECTION 3 · WILD ──────── */
+  /* Spectral kinetic wordmark — chromatic-aberration treatment */
+  .wm-wild {
+    position: relative;
+    font-family: 'Geist', sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: .9;
+    color: var(--fg);
+    isolation: isolate;
+  }
+  .wm-wild::before, .wm-wild::after {
+    content: attr(data-text); position: absolute; inset: 0;
+    pointer-events: none; mix-blend-mode: screen;
+  }
+  .wm-wild::before { color: var(--neon-cyan); transform: translate(-3px, 0); opacity: .7; }
+  .wm-wild::after  { color: var(--neon-pink); transform: translate( 3px, 0); opacity: .7; }
+
+  /* signal-ribbon mark for Wild */
+  .mark-wild {
+    position: relative; border-radius: 14px; overflow: hidden;
+    background: oklch(0.10 0.02 280);
+    border: 1px solid var(--line);
+  }
+  .mark-wild svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* generic artboard-internal UI bits used across mocks */
+  .browserbar {
+    height: 36px; display:flex; align-items:center; gap:8px; padding: 0 14px;
+    background: color-mix(in oklch, var(--bg-2) 80%, transparent);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot3 { width: 10px; height: 10px; border-radius: 999px; background: oklch(0.4 0.02 280); }
+  .url {
+    flex: 1; height: 22px; border-radius: 6px;
+    background: color-mix(in oklch, var(--bg) 80%, transparent);
+    border: 1px solid var(--line);
+    color: var(--muted); font: 500 11px/22px 'JetBrains Mono', monospace; padding: 0 10px;
+  }
+
+  /* sidebar mock */
+  .sb {
+    width: 220px; height: 100%;
+    background: color-mix(in oklch, var(--bg-2) 90%, transparent);
+    border-right: 1px solid var(--line);
+    display:flex; flex-direction: column;
+  }
+  .sb .brandcell { padding: 18px 20px 16px; border-bottom: 1px solid var(--line); }
+  .sb .nav { padding: 14px 12px; display:flex; flex-direction:column; gap: 4px; flex: 1; }
+  .sb .nav-item {
+    display:flex; align-items:center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+    font: 500 13px/1 'Geist', sans-serif; color: var(--muted);
+  }
+  .sb .nav-item.active {
+    color: var(--fg);
+    background: linear-gradient(90deg, oklch(0.82 0.16 200 / 0.15), oklch(0.65 0.26 295 / 0.15), oklch(0.72 0.24 350 / 0.15));
+    box-shadow: inset 0 0 0 1px oklch(0.65 0.26 295 / 0.25);
+  }
+  .sb .nav-item .ico {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: currentColor; opacity: .55;
+  }
+  .sb .nav-item.active .ico { opacity: 1; background: var(--neon-violet); }
+
+  /* beamer */
+  .beam-now { font: 700 64px/1 'Geist', sans-serif; letter-spacing: -0.02em; }
+  .beam-timer { font: 700 96px/1 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
+
+  /* shared "swatch chip" */
+  .swatch { width: 100%; aspect-ratio: 1.2/1; border-radius: 10px; border: 1px solid var(--line); position: relative; }
+  .swatch .lbl { position: absolute; left: 8px; bottom: 6px; font: 500 9px/1 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--fg); mix-blend-mode: difference; }
+
+  /* divider */
+  .hr { height: 1px; background: var(--line); width: 100%; }
+
+  /* small "annot" comment */
+  .annot {
+    position: absolute; right: 16px; bottom: 14px;
+    font: 500 10px/1.25 'JetBrains Mono', monospace; letter-spacing: .04em;
+    color: var(--muted); text-align: right; max-width: 240px;
+  }
+
+  /* page intro bar */
+  .intro {
+    padding: 36px 56px 24px;
+    color: var(--fg);
+  }
+  .intro h1 { margin: 0; font: 600 28px/1.1 'Geist', sans-serif; letter-spacing: -0.02em; }
+  .intro p  { margin: 8px 0 0; max-width: 720px; color: var(--muted); font: 400 14px/1.55 'Geist'; }
+  .intro .meta { display:flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <div class="meta">
+    <span class="tag cyan"><span class="dot"></span>Brand · Refresh Exploration</span>
+    <span class="tag"><span class="dot"></span>3 Richtungen · safe / bold / wild</span>
+    <span class="tag pink"><span class="dot"></span>Naming: MySession ↔ Sessions by UNION</span>
+  </div>
+  <h1 style="margin-top:18px">Sessions by UNION — Logo &amp; Brand Refresh</h1>
+  <p>
+    Drei Richtungen für die nächste Markenebene des Workshop-Tools — innerhalb des bestehenden
+    Aurora/Neon-DNA. Jede Richtung zeigt: Primary-Lockup, Mark-/Wordmark-Varianten, dazu vier
+    Anwendungen (Sidebar, Login, Beamer, Geteilte Workshop-Ansicht). Doppelklick auf einen
+    Artboard-Titel zum Umbenennen, ⌘/Ctrl+Click auf einen Artboard für Vollbild.
+  </p>
+</div>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="brand-pieces.jsx"></script>
+<script type="text/babel" src="brand-canvas.jsx"></script>
+
+</body>
+</html>

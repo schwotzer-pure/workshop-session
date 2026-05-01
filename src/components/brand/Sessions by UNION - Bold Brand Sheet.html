@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Sessions by UNION — Bold Brand Sheet</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: oklch(0.14 0.02 280);
+    --bg-2: oklch(0.18 0.02 280);
+    --fg: oklch(0.98 0 0);
+    --muted: oklch(0.7 0.02 280);
+    --line: oklch(1 0 0 / 0.10);
+    --line-strong: oklch(1 0 0 / 0.18);
+    --neon-cyan: oklch(0.82 0.16 200);
+    --neon-violet: oklch(0.65 0.26 295);
+    --neon-pink: oklch(0.72 0.24 350);
+    --neon-lime: oklch(0.88 0.22 145);
+    --grid: oklch(1 0 0 / 0.06);
+  }
+  html, body { margin: 0; background: oklch(0.10 0.02 280); color: var(--fg); font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+
+  .neon-text {
+    background: linear-gradient(120deg, var(--neon-cyan) 0%, var(--neon-violet) 50%, var(--neon-pink) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .aurora {
+    background:
+      radial-gradient(50rem 35rem at 0% 0%, oklch(0.82 0.16 200 / 0.28), transparent 55%),
+      radial-gradient(40rem 30rem at 100% 0%, oklch(0.72 0.24 350 / 0.25), transparent 55%),
+      radial-gradient(45rem 32rem at 50% 100%, oklch(0.65 0.26 295 / 0.22), transparent 55%),
+      var(--bg);
+  }
+  .aurora-soft {
+    background:
+      radial-gradient(60rem 40rem at 10% -10%, oklch(0.82 0.16 200 / 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at 95% 0%, oklch(0.72 0.24 350 / 0.15), transparent 60%),
+      radial-gradient(40rem 30rem at 50% 100%, oklch(0.65 0.26 295 / 0.12), transparent 60%),
+      var(--bg);
+  }
+  .glass {
+    background: color-mix(in oklch, var(--bg-2) 70%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid var(--line);
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .grain::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  }
+  .ab { width: 100%; height: 100%; position: relative; overflow: hidden; color: var(--fg); }
+  .ab.light { color: oklch(0.18 0.01 260); background: oklch(0.99 0.005 280); }
+  .ab .pad { padding: 32px; height: 100%; }
+
+  .tag {
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 4px 9px; border-radius: 999px;
+    font: 500 10px/1 'JetBrains Mono', monospace;
+    letter-spacing: .08em; text-transform: uppercase;
+    border: 1px solid var(--line);
+    background: color-mix(in oklch, var(--bg-2) 60%, transparent);
+    color: var(--muted);
+  }
+  .tag .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--neon-violet); box-shadow: 0 0 8px var(--neon-violet); }
+  .eyebrow { font: 500 11px/1 'JetBrains Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .body { font: 400 14px/1.5 'Geist', sans-serif; color: var(--muted); }
+
+  /* the Bold mark uses dedicated CSS (3 stacked timeline-bars in S silhouette) */
+  .mark-bold {
+    display: inline-block; position: relative;
+    border-radius: 12px;
+    background: linear-gradient(180deg, oklch(0.22 0.03 280), oklch(0.16 0.02 280));
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .mark-bold .blk {
+    position: absolute; left: 16%; right: 16%;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet) 60%, var(--neon-pink));
+    box-shadow: 0 0 18px oklch(0.65 0.26 295 / 0.45);
+  }
+  .mark-bold .blk.b1 { top: 18%;  height: 14%; right: 36%; }
+  .mark-bold .blk.b2 { top: 43%;  height: 14%; left: 24%; right: 16%; opacity: .85; }
+  .mark-bold .blk.b3 { top: 68%;  height: 14%; left: 16%; right: 36%; opacity: .65; }
+
+  /* Construction grid mark variant — same shape, with overlay */
+  .mark-bold.construct .blk { box-shadow: none; }
+  .construct-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: calc(100%/12) calc(100%/12);
+  }
+  .construct-clear {
+    position: absolute; inset: 0; pointer-events: none;
+    border: 1px dashed oklch(0.88 0.22 145 / 0.7);
+    margin: 6%;
+    border-radius: 8px;
+  }
+
+  /* sidebar / app chrome */
+  .browserbar {
+    height: 36px; display:flex; align-items:center; gap:8px; padding: 0 14px;
+    background: color-mix(in oklch, var(--bg-2) 80%, transparent);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot3 { width: 10px; height: 10px; border-radius: 999px; background: oklch(0.4 0.02 280); }
+  .url {
+    flex: 1; height: 22px; border-radius: 6px;
+    background: color-mix(in oklch, var(--bg) 80%, transparent);
+    border: 1px solid var(--line);
+    color: var(--muted); font: 500 11px/22px 'JetBrains Mono', monospace; padding: 0 10px;
+  }
+  .sb {
+    width: 220px; height: 100%;
+    background: color-mix(in oklch, var(--bg-2) 90%, transparent);
+    border-right: 1px solid var(--line);
+    display:flex; flex-direction: column;
+  }
+  .sb .brandcell { padding: 18px 20px 16px; border-bottom: 1px solid var(--line); }
+  .sb .nav { padding: 14px 12px; display:flex; flex-direction:column; gap: 4px; flex: 1; }
+  .sb .nav-item {
+    display:flex; align-items:center; gap: 10px; padding: 9px 12px; border-radius: 10px;
+    font: 500 13px/1 'Geist', sans-serif; color: var(--muted);
+  }
+  .sb .nav-item.active {
+    color: var(--fg);
+    background: linear-gradient(90deg, oklch(0.82 0.16 200 / 0.15), oklch(0.65 0.26 295 / 0.15), oklch(0.72 0.24 350 / 0.15));
+    box-shadow: inset 0 0 0 1px oklch(0.65 0.26 295 / 0.25);
+  }
+  .sb .nav-item .ico {
+    width: 14px; height: 14px; border-radius: 3px;
+    background: currentColor; opacity: .55;
+  }
+  .sb .nav-item.active .ico { opacity: 1; background: var(--neon-violet); }
+
+  /* annotation arrows / measurements for spec pages */
+  .spec-rule {
+    position: absolute; font: 500 10px/1 'JetBrains Mono', monospace;
+    letter-spacing: .04em; color: oklch(0.88 0.22 145);
+  }
+  .spec-rule .line {
+    background: oklch(0.88 0.22 145 / 0.6);
+    position: absolute;
+  }
+  .spec-rule .label {
+    background: oklch(0.10 0.02 280);
+    border: 1px solid oklch(0.88 0.22 145 / 0.5);
+    padding: 2px 5px; border-radius: 3px;
+    color: oklch(0.88 0.22 145);
+  }
+
+  /* Editor block-timeline mock styles */
+  .block-row { display:grid; grid-template-columns: 64px 80px 1fr auto; gap: 12px; align-items:center; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); }
+  .block-row .acc { width: 4px; height: 36px; border-radius: 4px; }
+  .block-row .time { font: 500 11px/1 'JetBrains Mono', monospace; color: var(--muted); }
+  .block-row .dur { font: 500 11px/1 'JetBrains Mono', monospace; color: var(--muted); padding: 4px 8px; border-radius: 999px; background: oklch(1 0 0 / 0.05); border: 1px solid var(--line); }
+  .block-row .label { font: 500 13px/1.2 Geist; }
+
+  /* Method library card */
+  .meth-card { padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: oklch(0.16 0.02 280); height: 150px; display:flex; flex-direction:column; justify-content:space-between; position: relative; overflow:hidden; }
+  .meth-card .swirl { position: absolute; inset: -40% -20% 40% 60%; opacity: .6; filter: blur(28px); }
+
+  /* page intro */
+  .intro { padding: 36px 56px 24px; }
+  .intro h1 { margin: 0; font: 600 28px/1.1 'Geist', sans-serif; letter-spacing: -0.02em; }
+  .intro p  { margin: 8px 0 0; max-width: 720px; color: var(--muted); font: 400 14px/1.55 'Geist'; }
+  .intro .meta { display:flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* motion spec animation */
+  @keyframes bk1 { 0% { transform: translateX(-30%); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+  @keyframes bk2 { 0% { transform: translateX( 30%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+  @keyframes bk3 { 0% { transform: translateX(-30%); opacity: 0; } 70% { opacity: 1; } 100% { transform: translateX(0); opacity: 1; } }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 18px oklch(0.65 0.26 295 / 0.45); } 50% { box-shadow: 0 0 36px oklch(0.65 0.26 295 / 0.85); } }
+
+  .motion-mark .blk { animation-duration: 2.4s; animation-iteration-count: infinite; animation-timing-function: cubic-bezier(.22,.61,.36,1); }
+  .motion-mark .blk.b1 { animation-name: bk1; }
+  .motion-mark .blk.b2 { animation-name: bk2; animation-delay: 0.15s; }
+  .motion-mark .blk.b3 { animation-name: bk3; animation-delay: 0.30s; }
+  .motion-mark.pulse .blk.b2 { animation: pulse 2.6s ease-in-out infinite, bk2 2.4s cubic-bezier(.22,.61,.36,1) infinite; }
+
+  /* swatches */
+  .swatch { border-radius: 12px; border: 1px solid var(--line); aspect-ratio: 1.2/1; padding: 12px; display:flex; flex-direction:column; justify-content:flex-end; position: relative; overflow: hidden; }
+  .swatch .name { font: 500 11px/1.3 Geist; }
+  .swatch .meta { font: 500 10px/1.3 'JetBrains Mono', monospace; color: oklch(1 0 0 / 0.7); }
+
+  /* type sample */
+  .type-row { display:grid; grid-template-columns: 110px 1fr; gap: 24px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items:baseline; }
+  .type-row:last-child { border-bottom: 0; }
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <div class="meta">
+    <span class="tag" style="border-color:var(--line);"><span class="dot" style="background:var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan);"></span>Bold · Vertiefung</span>
+    <span class="tag"><span class="dot"></span>Logo-System · Motion · Brand Sheet</span>
+    <span class="tag"><span class="dot" style="background:var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink);"></span>Lockup: Sessions by UNION</span>
+  </div>
+  <h1 style="margin-top:18px">Sessions by UNION — Bold Brand Sheet</h1>
+  <p>
+    Vertiefung der Bold-Richtung als sauberes System: Construction-Spec, Clearspace,
+    Mindestgrößen, Mark-Varianten, Motion-Verhalten, Farb- und Typo-Definition,
+    plus Anwendungen in Workshop-Editor, Method Library und einem App-Icon-Set.
+  </p>
+</div>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="brand-pieces.jsx"></script>
+<script type="text/babel" src="bold-sheet.jsx"></script>
+
+</body>
+</html>

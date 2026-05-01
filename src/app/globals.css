@@ -99,6 +99,9 @@
   --sidebar-accent-foreground: oklch(0.22 0.02 280);
   --sidebar-border: oklch(0.93 0.005 280);
   --sidebar-ring: var(--primary);
+
+  /* Page-level body background (one notch lighter than --background in light mode) */
+  --page-bg: oklch(0.98 0.005 280);
 }
 
 .dark {
@@ -128,6 +131,9 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: var(--primary);
+
+  /* Page-level body background (Ink — one notch darker than --background) */
+  --page-bg: oklch(0.10 0.02 280);
 }
 
 @layer base {
@@ -305,5 +311,120 @@
   .aurora-bg-strong {
     display: none !important;
     background: white !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Sessions Mark (Block-Stack S)
+   3 stacked timeline blocks forming an S-silhouette. Spec values from
+   src/components/brand/README.md.
+   ───────────────────────────────────────────────────────────────────── */
+
+.sessions-mark {
+  display: inline-block;
+  position: relative;
+  border-radius: 12px;
+  background: linear-gradient(180deg, oklch(0.22 0.03 280), oklch(0.16 0.02 280));
+  border: 1px solid oklch(1 0 0 / 0.10);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sessions-mark .blk {
+  position: absolute;
+  height: 14%;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-violet) 60%, var(--neon-pink));
+  box-shadow: 0 0 18px oklch(0.65 0.26 295 / 0.45);
+}
+
+.sessions-mark .blk.b1 { top: 18%; left: 16%; right: 36%; opacity: 1; }
+.sessions-mark .blk.b2 { top: 43%; left: 24%; right: 16%; opacity: 0.85; }
+.sessions-mark .blk.b3 { top: 68%; left: 16%; right: 36%; opacity: 0.65; }
+
+/* ── Variant: mono-dark (white blocks on dark container) ── */
+.sessions-mark[data-variant="mono-dark"] {
+  background: oklch(0.18 0.02 280);
+}
+.sessions-mark[data-variant="mono-dark"] .blk {
+  background: oklch(0.99 0.005 280);
+  box-shadow: none;
+}
+
+/* ── Variant: mono-light (dark blocks on light container) ── */
+.sessions-mark[data-variant="mono-light"] {
+  background: oklch(0.99 0.005 280);
+  border-color: oklch(0 0 0 / 0.08);
+}
+.sessions-mark[data-variant="mono-light"] .blk {
+  background: oklch(0.18 0.01 260);
+  box-shadow: none;
+}
+
+/* ── Variant: outline (1.5px border on each block, transparent fill) ── */
+.sessions-mark[data-variant="outline"] {
+  background: transparent;
+  border-color: oklch(0.99 0.005 280 / 0.9);
+}
+.sessions-mark[data-variant="outline"] .blk {
+  background: transparent;
+  border: 1.5px solid oklch(0.99 0.005 280 / 0.9);
+  box-shadow: none;
+}
+
+/* ── Variant: tinted (single-color violet, used for tinted iOS icons) ── */
+.sessions-mark[data-variant="tinted"] {
+  background: linear-gradient(135deg, oklch(0.55 0.22 295), oklch(0.4 0.22 295));
+}
+.sessions-mark[data-variant="tinted"] .blk {
+  background: oklch(0.18 0.01 260);
+  box-shadow: none;
+}
+
+/* ── Reveal Motion (on mount) ── */
+@keyframes sessions-mark-reveal-b1 {
+  0%   { transform: translateX(-30%); opacity: 0; }
+  30%  { transform: translateX(-8%);  opacity: 1; }
+  60%  { transform: translateX(-2%);  opacity: 1; }
+  100% { transform: translateX(0);    opacity: 1; }
+}
+@keyframes sessions-mark-reveal-b2 {
+  0%   { transform: translateX(30%); opacity: 0; }
+  30%  { transform: translateX(18%); opacity: 0; }
+  60%  { transform: translateX(4%);  opacity: 0.85; }
+  100% { transform: translateX(0);   opacity: 0.85; }
+}
+@keyframes sessions-mark-reveal-b3 {
+  0%   { transform: translateX(-30%); opacity: 0; }
+  30%  { transform: translateX(-22%); opacity: 0; }
+  60%  { transform: translateX(-10%); opacity: 0.5; }
+  100% { transform: translateX(0);    opacity: 0.65; }
+}
+
+.sessions-mark[data-animate="true"] .blk.b1 {
+  animation: sessions-mark-reveal-b1 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.sessions-mark[data-animate="true"] .blk.b2 {
+  animation: sessions-mark-reveal-b2 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: 0.15s;
+}
+.sessions-mark[data-animate="true"] .blk.b3 {
+  animation: sessions-mark-reveal-b3 2.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: 0.30s;
+}
+
+/* ── Live Pulse (during active session in cockpit/beamer) ── */
+@keyframes sessions-mark-pulse {
+  0%, 100% { box-shadow: 0 0 18px oklch(0.65 0.26 295 / 0.45); }
+  50%      { box-shadow: 0 0 36px oklch(0.65 0.26 295 / 0.85); }
+}
+.sessions-mark[data-live="true"] .blk.b2 {
+  animation: sessions-mark-pulse 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sessions-mark[data-animate="true"] .blk,
+  .sessions-mark[data-live="true"] .blk {
+    animation: none !important;
   }
 }

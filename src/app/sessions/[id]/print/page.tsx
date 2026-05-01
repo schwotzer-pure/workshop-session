@@ -32,5 +32,5 @@ export default async function PrintPage({
 }
 
 export const metadata = {
-  title: "Druckansicht — MySession",
+  title: "Druckansicht — Sessions",
 };
