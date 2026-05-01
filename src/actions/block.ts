@@ -40,6 +40,8 @@ const AddBlockSchema = z.object({
   column: z.number().int().min(0).default(0),
   /** Insert at this index. If undefined, append at end. */
   position: z.number().int().min(0).optional(),
+  /** Optional category to assign on creation (used for inheriting from parent group/breakout). */
+  categoryId: z.string().nullable().optional(),
 });
 
 export async function addBlockAction(input: z.input<typeof AddBlockSchema>) {
@@ -77,6 +79,7 @@ export async function addBlockAction(input: z.input<typeof AddBlockSchema>) {
       position: insertPos,
       parentBlockId: data.parentBlockId ?? null,
       column: data.column,
+      categoryId: data.categoryId ?? null,
     },
     include: { category: true },
   });

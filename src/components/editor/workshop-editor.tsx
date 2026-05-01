@@ -481,6 +481,8 @@ export function WorkshopEditor({
       return;
     }
     const type = option;
+    const parent = blocks.get(parentId);
+    const inheritCategoryId = parent?.categoryId ?? null;
     startTransition(async () => {
       try {
         const created = await addBlockAction({
@@ -490,6 +492,7 @@ export function WorkshopEditor({
           duration: type === "NOTE" ? 0 : 15,
           parentBlockId: parentId,
           column,
+          categoryId: inheritCategoryId,
         });
         setBlocks((prev) => {
           const m = new Map(prev);
@@ -522,6 +525,8 @@ export function WorkshopEditor({
     }
     const type = option;
     if (!day) return;
+    const parent = blocks.get(parentId);
+    const inheritCategoryId = parent?.categoryId ?? null;
     startTransition(async () => {
       try {
         const created = await addBlockAction({
@@ -532,6 +537,7 @@ export function WorkshopEditor({
           parentBlockId: parentId,
           column,
           position,
+          categoryId: inheritCategoryId,
         });
         setBlocks((prev) => {
           const m = new Map(prev);
