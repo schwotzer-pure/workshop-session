@@ -21,6 +21,7 @@ import {
   getOrganization,
   listWorkshopVersions,
   listMethods,
+  listShareLinksForWorkshop,
 } from "@/lib/queries";
 import { getActiveLiveSessionForWorkshop } from "@/lib/live";
 import { startLiveSessionAction } from "@/actions/live";
@@ -95,6 +96,7 @@ async function SessionContent({
     methods,
     workshopBoards,
     masterBoards,
+    shareLinks,
   ] = await Promise.all([
     getWorkshopWithBlocks(id),
     getCategoriesForUser(sessionUser.id),
@@ -104,6 +106,7 @@ async function SessionContent({
     listMethods(),
     listBoardsForWorkshop(id),
     listMasterBoards(),
+    listShareLinksForWorkshop(id),
   ]);
   if (!workshop) notFound();
   const dayId = workshop.days[0]?.id ?? "";
@@ -198,6 +201,7 @@ async function SessionContent({
               allUsers={users}
               currentUserId={sessionUser.id}
               initialShares={shareEntries}
+              initialShareLinks={shareLinks}
             />
             <SubmitTemplateButton
               workshopId={id}
@@ -218,6 +222,7 @@ async function SessionContent({
               allUsers={users}
               currentUserId={sessionUser.id}
               initialShares={shareEntries}
+              initialShareLinks={shareLinks}
             />
             <SubmitTemplateButton
               workshopId={id}

@@ -20,7 +20,7 @@ export const DUMMY_USERS: AppUser[] = [
     name: "Admin",
     email: "admin@hellopure.io",
     role: "ADMIN",
-    organizationId: "org_neustadt",
+    organizationId: "org_pure",
   },
   {
     id: "user_trainer",
