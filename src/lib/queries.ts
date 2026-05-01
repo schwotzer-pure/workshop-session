@@ -354,6 +354,138 @@ export async function getWorkshopWithBlocks(workshopId: string) {
   });
 }
 
+/**
+ * Public token-based fetch for the read-only client share view.
+ * - Skips authentication.
+ * - Strips trainer-only fields (`block.notes`, comments) from the result.
+ * - Validates token, expiry and revocation server-side.
+ * - Increments `viewCount` and `lastViewAt` on success (fire-and-forget).
+ * Returns null when the link is invalid / expired / revoked / workshop missing.
+ */
+export async function getWorkshopByShareToken(token: string) {
+  if (!token || typeof token !== "string" || token.length < 16) return null;
+
+  const link = await prisma.workshopShareLink.findUnique({
+    where: { token },
+    select: {
+      id: true,
+      workshopId: true,
+      label: true,
+      expiresAt: true,
+      revokedAt: true,
+    },
+  });
+  if (!link) return null;
+  if (link.revokedAt) return null;
+  if (link.expiresAt && link.expiresAt.getTime() < Date.now()) return null;
+
+  const workshop = await prisma.workshop.findUnique({
+    where: { id: link.workshopId },
+    include: {
+      organization: {
+        select: { id: true, name: true, slug: true },
+      },
+      createdBy: {
+        select: { id: true, name: true },
+      },
+      days: {
+        orderBy: { position: "asc" },
+        include: {
+          blocks: {
+            orderBy: [{ position: "asc" }, { column: "asc" }],
+            select: {
+              id: true,
+              dayId: true,
+              position: true,
+              column: true,
+              type: true,
+              title: true,
+              description: true,
+              duration: true,
+              locked: true,
+              startTime: true,
+              parentBlockId: true,
+              categoryId: true,
+              methodId: true,
+              category: true,
+              method: {
+                select: { id: true, title: true, category: true },
+              },
+              materials: {
+                orderBy: { name: "asc" },
+                select: {
+                  id: true,
+                  name: true,
+                  quantity: true,
+                  url: true,
+                  notes: true,
+                },
+              },
+              tasks: {
+                orderBy: { position: "asc" },
+                select: { id: true, text: true, done: true, position: true },
+              },
+            },
+          },
+        },
+      },
+      boards: {
+        include: {
+          board: {
+            select: { id: true, title: true, url: true, kind: true, tags: true },
+          },
+        },
+      },
+    },
+  });
+  if (!workshop) return null;
+
+  // Filter out method-draft sandboxes — they should never be publicly shareable.
+  if (workshop.isMethodDraft) return null;
+
+  // Fire-and-forget view tracking
+  prisma.workshopShareLink
+    .update({
+      where: { id: link.id },
+      data: { viewCount: { increment: 1 }, lastViewAt: new Date() },
+    })
+    .catch((err) => console.error("share-link view tracking failed", err));
+
+  return { workshop, link };
+}
+
+export type SharedWorkshop = NonNullable<
+  Awaited<ReturnType<typeof getWorkshopByShareToken>>
+>["workshop"];
+
+/**
+ * List share-links for a workshop (for the Teilen-Dialog).
+ */
+export async function listShareLinksForWorkshop(workshopId: string) {
+  return prisma.workshopShareLink.findMany({
+    where: { workshopId },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      token: true,
+      label: true,
+      email: true,
+      createdAt: true,
+      expiresAt: true,
+      revokedAt: true,
+      viewCount: true,
+      lastViewAt: true,
+      createdBy: {
+        select: { id: true, name: true },
+      },
+    },
+  });
+}
+
+export type ShareLinkItem = Awaited<
+  ReturnType<typeof listShareLinksForWorkshop>
+>[number];
+
 export const getCategoriesForUser = unstable_cache(
   async (userId: string) =>
     prisma.blockCategory.findMany({
