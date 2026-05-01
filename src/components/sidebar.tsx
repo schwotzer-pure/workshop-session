@@ -12,6 +12,8 @@ import {
   Building2,
   ShieldCheck,
   Menu,
+  HelpCircle,
+  Palette,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UnionLogo } from "@/components/union-logo";
@@ -28,6 +30,8 @@ const NAV: Array<{
   { href: "/dashboard/templates", label: "Vorlagen", icon: LayoutTemplate },
   { href: "/dashboard/library", label: "Methoden", icon: LibraryBig },
   { href: "/dashboard/boards", label: "Boards", icon: Layers },
+  { href: "/dashboard/help", label: "Hilfe & FAQ", icon: HelpCircle },
+  { href: "/dashboard/design-lab", label: "Design-Lab", icon: Palette, adminOnly: true },
   { href: "/dashboard/admin/templates", label: "Verwaltung", icon: ShieldCheck, adminOnly: true },
   { href: "/dashboard/settings", label: "Einstellungen", icon: Settings, adminOnly: true },
 ];
