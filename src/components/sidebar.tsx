@@ -65,7 +65,7 @@ function SidebarBody({
           onClick={onItemClick}
           aria-label="Sessions by UNION"
         >
-          <SessionsMark size={26} />
+          <SessionsMark size={26} animate />
           <div className="flex flex-col leading-none">
             <SessionsWordmark size={18} />
             <span className="mt-1.5 flex items-center gap-1.5 text-[9px] font-medium text-muted-foreground">

@@ -565,10 +565,10 @@ function TemplateCard({
         <button
           type="button"
           onClick={handleUse}
-          className="mt-auto inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-2 text-sm font-medium text-white shadow-[0_4px_20px_-6px_oklch(0.65_0.26_295/_0.5)] transition-opacity hover:opacity-95"
+          className="mt-auto inline-flex shrink-0 items-center gap-1.5 self-end rounded-full bg-gradient-to-r from-[var(--neon-cyan)] via-[var(--neon-violet)] to-[var(--neon-pink)] px-3 py-1.5 text-xs font-medium text-white shadow-[0_4px_20px_-6px_oklch(0.65_0.26_295/_0.5)] transition-opacity hover:opacity-95"
         >
-          <Sparkles className="size-3.5" />
-          Als Session erstellen
+          <Sparkles className="size-3" />
+          Session erstellen
         </button>
       </div>
     </article>
