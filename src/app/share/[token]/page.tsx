@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Eye, ShieldAlert } from "lucide-react";
 import { getWorkshopByShareToken } from "@/lib/queries";
+import { SharedWorkshopView } from "@/components/share/shared-workshop-view";
 
 export const dynamic = "force-dynamic";
 
@@ -39,14 +40,11 @@ export default async function SharePage({
         </Link>
       </header>
       <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <div className="mx-auto max-w-3xl space-y-4">
-          <h1 className="text-3xl font-semibold tracking-tight">
-            {result.workshop.title || "Workshop-Vorschau"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Token gültig — Read-Only View kommt in Step 5.
-          </p>
-        </div>
+        <SharedWorkshopView workshop={result.workshop} />
+        <p className="mx-auto mt-12 max-w-3xl text-center text-[11px] text-muted-foreground/60">
+          Diese Vorschau wurde mit MySession erstellt — Workshop-Planung von{" "}
+          <span className="text-foreground/70">UNION</span>.
+        </p>
       </main>
     </>
   );
