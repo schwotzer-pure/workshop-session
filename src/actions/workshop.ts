@@ -53,6 +53,7 @@ const UpdateWorkshopSchema = z.object({
   clientName: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
   startDate: z.string().nullable().optional(),
+  organizationId: z.string().nullable().optional(),
 });
 
 export async function updateWorkshopAction(input: z.input<typeof UpdateWorkshopSchema>) {
@@ -68,6 +69,7 @@ export async function updateWorkshopAction(input: z.input<typeof UpdateWorkshopS
       clientName: data.clientName,
       tags: data.tags,
       startDate: data.startDate ? new Date(data.startDate) : data.startDate === null ? null : undefined,
+      organizationId: data.organizationId === undefined ? undefined : data.organizationId,
     },
   });
 

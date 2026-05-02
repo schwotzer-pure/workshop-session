@@ -106,6 +106,7 @@ export function WorkshopEditor({
   methods,
   workshopBoards,
   masterBoards,
+  organizations,
   currentUserId,
   isAdmin,
 }: {
@@ -115,6 +116,7 @@ export function WorkshopEditor({
   methods: MethodListItem[];
   workshopBoards: WorkshopBoardItem[];
   masterBoards: MasterBoardItem[];
+  organizations: { id: string; name: string; parentOrgId: string | null }[];
   currentUserId: string;
   isAdmin: boolean;
 }) {
@@ -594,6 +596,8 @@ export function WorkshopEditor({
         dayId={day?.id ?? ""}
         boards={workshopBoards}
         masterBoards={masterBoards}
+        organizationId={workshop.organizationId}
+        organizations={organizations}
       />
 
       <DayTabs

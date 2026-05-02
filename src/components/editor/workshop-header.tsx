@@ -8,6 +8,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { updateWorkshopAction, updateDayAction } from "@/actions/workshop";
 import { formatDuration, isValidHhmm } from "@/lib/time";
 import { StatusPicker, type WorkshopStatusValue } from "./status-picker";
+import { OrganizationPicker, type OrgItem } from "./organization-picker";
 import { WorkshopBoards } from "./workshop-boards";
 import type {
   MasterBoardItem,
@@ -30,6 +31,8 @@ export function WorkshopHeader({
   dayId,
   boards,
   masterBoards,
+  organizationId,
+  organizations,
 }: {
   workshopId: string;
   title: string;
@@ -46,6 +49,8 @@ export function WorkshopHeader({
   dayId: string;
   boards: WorkshopBoardItem[];
   masterBoards: MasterBoardItem[];
+  organizationId: string | null;
+  organizations: OrgItem[];
 }) {
   const [pending, startTransition] = useTransition();
   const [titleValue, setTitleValue] = useState(title);
@@ -73,8 +78,13 @@ export function WorkshopHeader({
   return (
     <div className="space-y-4 pb-2">
       <div className="space-y-2">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <StatusPicker workshopId={workshopId} value={status} />
+          <OrganizationPicker
+            workshopId={workshopId}
+            value={organizationId}
+            organizations={organizations}
+          />
         </div>
         <input
           type="text"

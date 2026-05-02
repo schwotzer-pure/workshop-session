@@ -19,6 +19,7 @@ import {
   getCategoriesForUser,
   listAllUsers,
   getOrganization,
+  getOrganizationsInUnion,
   listWorkshopVersions,
   listMethods,
   listShareLinksForWorkshop,
@@ -97,6 +98,7 @@ async function SessionContent({
     workshopBoards,
     masterBoards,
     shareLinks,
+    organizations,
   ] = await Promise.all([
     getWorkshopWithBlocks(id),
     getCategoriesForUser(sessionUser.id),
@@ -107,6 +109,7 @@ async function SessionContent({
     listBoardsForWorkshop(id),
     listMasterBoards(),
     listShareLinksForWorkshop(id),
+    getOrganizationsInUnion(),
   ]);
   if (!workshop) notFound();
   const dayId = workshop.days[0]?.id ?? "";
@@ -275,6 +278,7 @@ async function SessionContent({
           methods={methods}
           workshopBoards={workshopBoards}
           masterBoards={masterBoards}
+          organizations={organizations}
           currentUserId={sessionUser.id}
           isAdmin={sessionUser.role === "ADMIN"}
         />
