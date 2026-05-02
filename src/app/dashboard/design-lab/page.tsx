@@ -4,6 +4,9 @@ import { Sparkles, Palette } from "lucide-react";
 import { DashboardMockups } from "@/components/design-lab/dashboard-mockups";
 import { TemplateMockups } from "@/components/design-lab/template-mockups";
 import { MethodMockups } from "@/components/design-lab/method-mockups";
+import { TemplateFilterMockups } from "@/components/design-lab/template-filter-mockups";
+import { MethodFilterMockups } from "@/components/design-lab/method-filter-mockups";
+import { BoardFilterMockups } from "@/components/design-lab/board-filter-mockups";
 
 export const metadata = {
   title: "Design-Lab — Sessions",
@@ -37,6 +40,21 @@ export default async function DesignLabPage() {
       <DashboardMockups />
       <TemplateMockups />
       <MethodMockups />
+
+      {/* Filter-Bar Konzepte */}
+      <div className="rounded-2xl border border-dashed border-[var(--neon-cyan)]/30 bg-[var(--neon-cyan)]/[0.03] px-5 py-4">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-[var(--neon-cyan)]">
+          Filter-Bar Konzepte
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Drei Konzepte je Seite — jede mit unterschiedlichem Fokus auf Speed,
+          Visualität oder Genauigkeit.
+        </p>
+      </div>
+
+      <TemplateFilterMockups />
+      <MethodFilterMockups />
+      <BoardFilterMockups />
 
       <section className="rounded-2xl border border-dashed border-[var(--neon-violet)]/30 bg-[var(--neon-violet)]/[0.04] p-5">
         <p className="flex items-start gap-2 text-sm text-muted-foreground">
