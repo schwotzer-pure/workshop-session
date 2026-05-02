@@ -40,7 +40,16 @@ export default async function SharePage({
         </Link>
       </header>
       <main className="flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <SharedWorkshopView workshop={result.workshop} />
+        <SharedWorkshopView
+          workshop={result.workshop}
+          boards={result.workshop.boards.map((wb) => ({
+            id: wb.board.id,
+            title: wb.board.title,
+            url: wb.board.url,
+            kind: wb.board.kind,
+            tags: wb.board.tags,
+          }))}
+        />
         <p className="mx-auto mt-12 max-w-3xl text-center text-[11px] text-muted-foreground/60">
           Diese Vorschau wurde mit Sessions erstellt — Workshop-Planung von{" "}
           <span className="text-foreground/70">UNION</span>.

@@ -25,6 +25,28 @@ import type { SharedWorkshop } from "@/lib/queries";
 
 type Block = SharedWorkshop["days"][number]["blocks"][number];
 
+/** Normalised board shape — works for both share-link and overview contexts. */
+export type ViewBoard = {
+  id: string;
+  title: string;
+  url: string;
+  kind?: string | null;
+  tags?: string[];
+};
+
+/** Workshop subset that both `SharedWorkshop` and `WorkshopWithBlocks` satisfy. */
+type ViewWorkshop = {
+  title: string;
+  goals: string | null;
+  description: string | null;
+  clientName: string | null;
+  tags: string[];
+  startDate: Date | string | null;
+  organization: { name: string } | null;
+  createdBy: { name: string };
+  days: SharedWorkshop["days"];
+};
+
 function formatDate(d: Date | string | null): string {
   if (!d) return "Noch ohne Datum";
   return new Date(d).toLocaleDateString("de-CH", {
@@ -45,7 +67,15 @@ function effectiveDuration(block: Block, children: Block[]): number {
   return block.duration;
 }
 
-export function SharedWorkshopView({ workshop }: { workshop: SharedWorkshop }) {
+export function SharedWorkshopView({
+  workshop,
+  boards,
+}: {
+  workshop: ViewWorkshop;
+  /** Pass the boards separately. For share-pages, derive from workshop.boards. */
+  boards?: ViewBoard[];
+}) {
+  const boardList: ViewBoard[] = boards ?? [];
   const day = workshop.days[0];
   const allBlocks = day?.blocks ?? [];
   const topBlocks = allBlocks.filter((b) => b.parentBlockId === null);
@@ -168,7 +198,7 @@ export function SharedWorkshopView({ workshop }: { workshop: SharedWorkshop }) {
       ) : null}
 
       {/* Boards */}
-      {workshop.boards.length > 0 ? (
+      {boardList.length > 0 ? (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-[var(--neon-cyan)]" />
@@ -177,12 +207,12 @@ export function SharedWorkshopView({ workshop }: { workshop: SharedWorkshop }) {
             </h2>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2">
-            {workshop.boards.map((wb) => {
-              const kind = detectLinkKind(wb.board.url);
+            {boardList.map((b) => {
+              const kind = detectLinkKind(b.url);
               return (
-                <li key={wb.board.id}>
+                <li key={b.id}>
                   <a
-                    href={wb.board.url}
+                    href={b.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="glass-card flex items-center gap-3 rounded-xl p-3 transition-colors hover:border-[var(--neon-violet)]/30"
@@ -198,10 +228,10 @@ export function SharedWorkshopView({ workshop }: { workshop: SharedWorkshop }) {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">
-                        {wb.board.title}
+                        {b.title}
                       </div>
                       <div className="truncate text-[11px] text-muted-foreground">
-                        {safeHost(wb.board.url)}
+                        {safeHost(b.url)}
                       </div>
                     </div>
                     <ExternalLink className="size-3.5 shrink-0 text-muted-foreground/60" />
